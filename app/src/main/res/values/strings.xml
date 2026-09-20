@@ -1,0 +1,627 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GymFlow</string>
+    <string name="a_full_meal" formatted="false">Полноценный приём пищи</string>
+    <string name="a_personal_home_or_gym_program_for_the_days" formatted="false">Персональная программа для дома или спортзала по выбранным дням недели.</string>
+    <string name="about" formatted="false">О приложении</string>
+    <string name="active" formatted="false">Активный</string>
+    <string name="activity" formatted="false">Активность</string>
+    <string name="add" formatted="false">Добавить</string>
+    <string name="add_a_value_to_keep_your_stats_complete" formatted="false">Добавьте значение, чтобы статистика оставалась полной.</string>
+    <string name="add_data" formatted="false">Добавить данные</string>
+    <string name="add_entry" formatted="false">Добавить запись</string>
+    <string name="add_exercise" formatted="false">Добавить упражнение</string>
+    <string name="add_food_and_water_throughout_the_day" formatted="false">Добавляй еду и воду по ходу дня</string>
+    <string name="add_food_protein_calories_or_water_fill_only" formatted="false">Добавьте еду, белок, калории или воду — можно заполнить только нужные поля.</string>
+    <string name="add_measurements" formatted="false">Добавить замеры</string>
+    <string name="add_muscle_measurements" formatted="false">Добавить замеры мышц</string>
+    <string name="add_nutrition" formatted="false">Добавить питание</string>
+    <string name="add_only_the_measurements_you_want_to_track" formatted="false">Добавьте только те обхваты, которые хотите отслеживать.</string>
+    <string name="add_record" formatted="false">Добавить рекорд</string>
+    <string name="add_to_playlist" formatted="false">Добавить в плейлист</string>
+    <string name="add_to_queue" formatted="false">Добавить в очередь</string>
+    <string name="add_tracks_from_a_track_menu" formatted="false">Добавьте треки через меню композиции.</string>
+    <string name="add_tracks_from_the_music_library" formatted="false">Добавьте треки из музыкальной библиотеки.</string>
+    <string name="add_weight_or_height_and_your_history_will_s" formatted="false">Добавь вес или рост — история останется здесь.</string>
+    <string name="add_your_current_personal_record" formatted="false">Добавьте текущий личный рекорд.</string>
+    <string name="add_your_current_weight_and_height_you_can_u" formatted="false">Добавь текущий вес и рост. При желании обнови и замеры мышц.</string>
+    <string name="add_your_first_measurement_to_see_history" formatted="false">Добавьте первый замер, чтобы увидеть историю.</string>
+    <string name="added_today" formatted="false">Сегодня добавлено</string>
+    <string name="after_workout" formatted="false">После тренировки</string>
+    <string name="age" formatted="false">Возраст</string>
+    <string name="age_sex_experience" formatted="false">Возраст · пол · стаж</string>
+    <string name="albums" formatted="false">Альбомы</string>
+    <string name="all_food_protein_calorie_and_water_settings" formatted="false">Все настройки еды, белка, калорий и воды</string>
+    <string name="almost_ready" formatted="false">Почти готово</string>
+    <string name="analyzing_your_data" formatted="false">Анализируем ваши данные…</string>
+    <string name="appearance" formatted="false">Внешний вид</string>
+    <string name="arm_biceps" formatted="false">Рука / бицепс</string>
+    <string name="arm_cm" formatted="false">Рука, см</string>
+    <string name="artists" formatted="false">Исполнители</string>
+    <string name="audio_file" formatted="false">Аудиофайл</string>
+    <string name="back" formatted="false">Назад</string>
+    <string name="barbells_machines_dumbbells_and_other_equipm" formatted="false">Штанга, тренажёры, гантели и другое оборудование.</string>
+    <string name="basic_data" formatted="false">Базовые данные</string>
+    <string name="basic_data_for_tracking_training_progress" formatted="false">Базовые данные для динамики тренировок.</string>
+    <string name="basic_profile_data_is_used_for_personalizati" formatted="false">Базовые данные профиля используются для персонализации. Вес, рост и обхваты хранятся отдельно в разделе замеров, а питание — во вкладке питания.</string>
+    <string name="basic_program" formatted="false">Базовая программа</string>
+    <string name="beginner" formatted="false">Начинаю</string>
+    <string name="bench" formatted="false">Скамья</string>
+    <string name="biceps" formatted="false">Бицепс</string>
+    <string name="biceps_cm" formatted="false">Бицепс, см</string>
+    <string name="blue" formatted="false">Синий</string>
+    <string name="body_goals_and_workout_history" formatted="false">История тела, целей и тренировок</string>
+    <string name="body_measurements" formatted="false">Замеры тела</string>
+    <string name="bodyweight" formatted="false">Собственный вес</string>
+    <string name="bodyweight_dumbbells_a_pull_up_bar_and_minim" formatted="false">Собственный вес, гантели, турник и минимальное оборудование.</string>
+    <string name="bodyweight_only" formatted="false">Только собственный вес</string>
+    <string name="brown" formatted="false">Коричневый</string>
+    <string name="buckwheat_or_rice_meat" formatted="false">Гречка или рис + мясо</string>
+    <string name="calculating_training_load" formatted="false">Рассчитываем нагрузку…</string>
+    <string name="calf" formatted="false">Икра</string>
+    <string name="calf_cm" formatted="false">Икра, см</string>
+    <string name="calories" formatted="false">Калории</string>
+    <string name="calories_kcal" formatted="false">Калории, ккал</string>
+    <string name="calories_kcal_day" formatted="false">Калории, ккал/день</string>
+    <string name="cancel" formatted="false">Отмена</string>
+    <string name="checking_personal_records" formatted="false">Проверяем личные рекорды…</string>
+    <string name="chest" formatted="false">Грудь</string>
+    <string name="chest_73481ed" formatted="false">грудь</string>
+    <string name="chest_cm" formatted="false">Грудь, см</string>
+    <string name="choose_a_program" formatted="false">Выберите программу</string>
+    <string name="choose_a_track" formatted="false">Выберите трек</string>
+    <string name="choose_at_least_one_day" formatted="false">Выберите хотя бы один день.</string>
+    <string name="choose_file" formatted="false">Выбрать файл</string>
+    <string name="choose_photo" formatted="false">Выбрать фото</string>
+    <string name="choose_your_language" formatted="false">Выберите язык</string>
+    <string name="choosing_your_program" formatted="false">Подбираем программу…</string>
+    <string name="clear" formatted="false">Очистить</string>
+    <string name="close" formatted="false">Закрыть</string>
+    <string name="cm" formatted="false">см</string>
+    <string name="color_scheme" formatted="false">Цветовая схема</string>
+    <string name="common_mistakes" formatted="false">Частые ошибки</string>
+    <string name="complete_your_basic_data" formatted="false">Дополните базовые данные</string>
+    <string name="completed_workouts_will_appear_here_and_stay" formatted="false">Завершённые тренировки появятся здесь и сохранятся после перезапуска приложения.</string>
+    <string name="continue_action" formatted="false">Продолжить</string>
+    <string name="continue_workout" formatted="false">Продолжить тренировку</string>
+    <string name="cottage_cheese_fruit" formatted="false">Творог + фрукты</string>
+    <string name="could_not_export_data" formatted="false">Не удалось экспортировать данные</string>
+    <string name="could_not_import_this_file" formatted="false">Этот файл не удалось импортировать</string>
+    <string name="create_a_goal_with_a_name_value_and_unit" formatted="false">Создайте цель: упражнение, значение и единица измерения.</string>
+    <string name="create_a_playlist_and_add_your_favorite_trac" formatted="false">Создайте плейлист и добавьте любимые треки.</string>
+    <string name="create_a_playlist_first" formatted="false">Сначала создайте плейлист.</string>
+    <string name="create_goal" formatted="false">Создать цель</string>
+    <string name="create_playlist" formatted="false">Создать плейлист</string>
+    <string name="daily_goals" formatted="false">Дневные цели</string>
+    <string name="daily_target" formatted="false">Цель на день</string>
+    <string name="dark" formatted="false">Тёмная</string>
+    <string name="data_section" formatted="false">Данные</string>
+    <string name="date_of_birth_height_and_weight_help_gymflow" formatted="false">Дата рождения, рост и вес помогают GymFlow точнее показывать вашу динамику.</string>
+    <string name="day" formatted="false">день</string>
+    <string name="default_label" formatted="false">По умолчанию</string>
+    <string name="delete" formatted="false">Удалить</string>
+    <string name="delete_all_gymflow_data" formatted="false">Удалить все данные GymFlow?</string>
+    <string name="delete_measurement" formatted="false">Удалить измерение?</string>
+    <string name="delete_workout" formatted="false">Удалить тренировку</string>
+    <string name="delete_workout_98e043c" formatted="false">Удалить тренировку?</string>
+    <string name="description" formatted="false">Описание</string>
+    <string name="device_accent_with_gymflow_neutral_surfaces" formatted="false">Акцент из темы устройства, нейтральный фон GymFlow</string>
+    <string name="distributing_exercises" formatted="false">Распределяем упражнения…</string>
+    <string name="do_not_specify_date_of_birth" formatted="false">Не указывать дату рождения</string>
+    <string name="done" formatted="false">Готово</string>
+    <string name="dumbbells" formatted="false">Гантели</string>
+    <string name="dumbbells_pull_up_bar" formatted="false">Гантели + турник</string>
+    <string name="edit" formatted="false">Изменить</string>
+    <string name="edit_a190f4d" formatted="false">Редактировать</string>
+    <string name="edit_data" formatted="false">Изменить данные</string>
+    <string name="edit_nutrition" formatted="false">Редактирование питания</string>
+    <string name="edit_profile" formatted="false">Изменить профиль</string>
+    <string name="eggs_bread_tomatoes" formatted="false">Яйца + хлеб + помидоры</string>
+    <string name="eggs_bread_vegetables" formatted="false">Яйца + хлеб + овощи</string>
+    <string name="enter_your_own_targets_you_can_change_them_l" formatted="false">Введите собственные цели — их всегда можно изменить позже.</string>
+    <string name="entry" formatted="false">Запись</string>
+    <string name="evening" formatted="false">вечер</string>
+    <string name="expand_a_day_to_disable_replace_or_reorder_e" formatted="false">Раскройте день, отключите, замените или поменяйте порядок упражнений.</string>
+    <string name="experience" formatted="false">Стаж</string>
+    <string name="export" formatted="false">Экспорт</string>
+    <string name="feedback" formatted="false">Обратная связь</string>
+    <string name="female" formatted="false">Женский</string>
+    <string name="file_access_required" formatted="false">Нужен доступ к файлу</string>
+    <string name="finish_a_workout_to_see_your_load_distributi" formatted="false">Заверши тренировку — здесь появится распределение нагрузки.</string>
+    <string name="finish_rest" formatted="false">Завершить отдых</string>
+    <string name="finish_your_first_workout_to_see_history" formatted="false">Завершите первую тренировку, чтобы увидеть историю.</string>
+    <string name="finish_your_first_workout_to_see_load_distri" formatted="false">Завершите первую тренировку, чтобы увидеть распределение нагрузки.</string>
+    <string name="first_name" formatted="false">Имя</string>
+    <string name="forearm" formatted="false">Предплечье</string>
+    <string name="forearm_cm" formatted="false">Предплечье, см</string>
+    <string name="full_body" formatted="false">Всё тело</string>
+    <string name="g" formatted="false">г</string>
+    <string name="g_protein" formatted="false">г белка</string>
+    <string name="goal" formatted="false">ЦЕЛЬ</string>
+    <string name="goal_c58da1c" formatted="false">Цель</string>
+    <string name="goals" formatted="false">Цели</string>
+    <string name="got_it" formatted="false">Понятно</string>
+    <string name="green" formatted="false">Зелёный</string>
+    <string name="gym" formatted="false">СПОРТЗАЛ</string>
+    <string name="gymflow_can_remind_you_about_training_and_yo" formatted="false">GymFlow напомнит о тренировке и поможет не забывать о целях.</string>
+    <string name="gymflow_data_exported" formatted="false">Данные GymFlow экспортированы</string>
+    <string name="gymflow_data_is_stored_locally_on_your_devic" formatted="false">Данные GymFlow хранятся локально на устройстве и включают профиль, тренировки, питание и замеры. Экспорт выполняется только по вашему действию. Вы можете сбросить данные в настройках.</string>
+    <string name="gymflow_data_is_stored_locally_on_your_devic_331136c" formatted="false">Данные GymFlow хранятся локально на устройстве. Экспорт выполняется только по вашему действию. Музыкальные файлы не включаются в JSON-резервную копию, а ссылки на локальную музыку могут потребовать повторного доступа после переноса резервной копии.</string>
+    <string name="gymflow_data_restored" formatted="false">Данные GymFlow восстановлены</string>
+    <string name="gymflow_feedback" formatted="false">GymFlow — обратная связь</string>
+    <string name="gymflow_helps_you_track_workouts_nutrition_a" formatted="false">GymFlow помогает вести тренировки, питание и прогресс. Вы самостоятельно выбираете нагрузки и значения целей. Приложение не заменяет консультацию специалиста и не предназначено для диагностики или лечения заболеваний.</string>
+    <string name="gymflow_helps_you_track_workouts_nutrition_a_cbeee16" formatted="false">GymFlow помогает вести тренировки, питание и прогресс. Вы самостоятельно выбираете нагрузки и значения целей. Приложение не заменяет консультацию специалиста. Не используйте GymFlow для диагностики или лечения заболеваний.</string>
+    <string name="gymflow_reminders" formatted="false">GymFlow · напоминания</string>
+    <string name="height" formatted="false">Рост</string>
+    <string name="height_cm" formatted="false">Рост, см</string>
+    <string name="height_weight_and_sex" formatted="false">Рост, вес и пол</string>
+    <string name="hide_muscle_measurements" formatted="false">Скрыть замеры мышц</string>
+    <string name="high_protein_milk_or_yogurt" formatted="false">Белковое молоко или йогурт</string>
+    <string name="home" formatted="false">ДОМА</string>
+    <string name="home_9dd0b33" formatted="false">На главную</string>
+    <string name="how_gymflow_uses_data" formatted="false">Как GymFlow использует данные</string>
+    <string name="i_accept_the_terms_of_use" formatted="false">Я принимаю Пользовательское соглашение</string>
+    <string name="i_have_read_the_privacy_policy" formatted="false">Я ознакомился с Политикой конфиденциальности</string>
+    <string name="if_reminders_are_enabled_gymflow_will_remind" formatted="false">Если напоминания включены, через 45 минут GymFlow напомнит проверить питание и восстановление.</string>
+    <string name="import_action" formatted="false">Импорт</string>
+    <string name="import_data" formatted="false">Импортировать данные</string>
+    <string name="import_local_audio_files_gymflow_will_not_cr" formatted="false">Импортируйте локальные аудиофайлы — GymFlow не будет создавать лишние копии.</string>
+    <string name="import_music" formatted="false">Импортировать музыку</string>
+    <string name="import_music_to_see_albums" formatted="false">Импортируйте музыку, чтобы увидеть альбомы.</string>
+    <string name="import_music_to_see_artists" formatted="false">Импортируйте музыку, чтобы увидеть исполнителей.</string>
+    <string name="in_3_days" formatted="false">Через 3 дня</string>
+    <string name="in_progress" formatted="false">В ПРОЦЕССЕ</string>
+    <string name="information" formatted="false">Информация</string>
+    <string name="interface_language" formatted="false">Язык интерфейса</string>
+    <string name="jerking_or_losing_control_of_the_movement" formatted="false">Рывки и потеря контроля движения</string>
+    <string name="kcal" formatted="false">ккал</string>
+    <string name="kg" formatted="false">кг</string>
+    <string name="language" formatted="false">Язык</string>
+    <string name="last_name" formatted="false">Фамилия</string>
+    <string name="last_workout" formatted="false">Последняя тренировка</string>
+    <string name="latest_entry" formatted="false">последняя запись</string>
+    <string name="legs_glutes" formatted="false">Ноги и ягодицы</string>
+    <string name="light" formatted="false">Светлая</string>
+    <string name="lightly_active" formatted="false">Немного активный</string>
+    <string name="listen_to_your_own_music_while_you_train" formatted="false">Слушайте собственную музыку прямо во время тренировки.</string>
+    <string name="male" formatted="false">Мужской</string>
+    <string name="master_switch_for_all_gymflow_notifications" formatted="false">Главный переключатель всех уведомлений GymFlow</string>
+    <string name="measurement" formatted="false">Замер</string>
+    <string name="measurement_history" formatted="false">История замеров</string>
+    <string name="measurements" formatted="false">Замеры</string>
+    <string name="menu" formatted="false">Меню</string>
+    <string name="mixed_home_program" formatted="false">Смешанная домашняя программа</string>
+    <string name="ml" formatted="false">мл</string>
+    <string name="mobility" formatted="false">Мобильность</string>
+    <string name="monochrome" formatted="false">Чёрно-белый</string>
+    <string name="monthly_progress" formatted="false">Ежемесячный прогресс</string>
+    <string name="monthly_update" formatted="false">Ежемесячное обновление</string>
+    <string name="morning" formatted="false">утро</string>
+    <string name="morning_afternoon_and_evening_based_on_your" formatted="false">Утро, день и вечер с учётом вашей цели</string>
+    <string name="motivation" formatted="false">МОТИВАЦИЯ</string>
+    <string name="motivation_14df0e8" formatted="false">Мотивация</string>
+    <string name="move_smoothly_and_under_control" formatted="false">Выполняйте движение плавно и контролируемо.</string>
+    <string name="muscle_load" formatted="false">Мышечная нагрузка</string>
+    <string name="muscle_measurements" formatted="false">Дополнительные замеры мышц</string>
+    <string name="muscle_measurements_7d84fc7" formatted="false">Замеры мышц</string>
+    <string name="music" formatted="false">МУЗЫКА</string>
+    <string name="music_df4392a" formatted="false">Музыка</string>
+    <string name="name" formatted="false">Название</string>
+    <string name="new_measurement" formatted="false">Новое измерение</string>
+    <string name="new_measurement_68b97bf" formatted="false">Новый замер</string>
+    <string name="new_playlist" formatted="false">Новый плейлист</string>
+    <string name="new_progress_entry" formatted="false">Новая запись прогресса</string>
+    <string name="next" formatted="false">СЛЕДУЮЩАЯ</string>
+    <string name="next_c59db3d" formatted="false">Следующий</string>
+    <string name="next_exercise" formatted="false">Следующее упражнение: </string>
+    <string name="next_f0059de" formatted="false">Далее</string>
+    <string name="next_set" formatted="false">Следующий подход</string>
+    <string name="no_albums_yet" formatted="false">Альбомов пока нет</string>
+    <string name="no_artists_yet" formatted="false">Исполнителей пока нет</string>
+    <string name="no_change" formatted="false">без изменений</string>
+    <string name="no_email_app_found" formatted="false">Не найдено приложение для почты</string>
+    <string name="no_goals_yet" formatted="false">Целей пока нет</string>
+    <string name="no_measurements_yet" formatted="false">Пока нет измерений</string>
+    <string name="no_music_yet" formatted="false">Музыка ещё не добавлена</string>
+    <string name="no_playlists_yet" formatted="false">Плейлистов пока нет</string>
+    <string name="no_protein_data_for_yesterday" formatted="false">Вчера нет данных о белке</string>
+    <string name="no_records_yet" formatted="false">Рекордов пока нет</string>
+    <string name="no_workouts_yet" formatted="false">Тренировок пока нет</string>
+    <string name="not_specified" formatted="false">Не указывать</string>
+    <string name="note" formatted="false">Заметка</string>
+    <string name="note_90fdad8" formatted="false">Комментарий</string>
+    <string name="notifications" formatted="false">Уведомления</string>
+    <string name="nutrition" formatted="false">ПИТАНИЕ</string>
+    <string name="nutrition_294139b" formatted="false">Питание</string>
+    <string name="nutrition_and_recovery_reminders_after_worko" formatted="false">Напоминания о питании и восстановлении после тренировки</string>
+    <string name="nutrition_entry" formatted="false">Запись питания</string>
+    <string name="nutrition_protein" formatted="false">Питание / белок</string>
+    <string name="nutrition_targets" formatted="false">Цели питания</string>
+    <string name="off" formatted="false">Выключены</string>
+    <string name="on" formatted="false">Включены</string>
+    <string name="once_a_month_we_can_remind_you_to_update_wei" formatted="false">Раз в месяц напомним обновить вес, рост и, по желанию, замеры тела.</string>
+    <string name="one_json_file_profile_workouts_nutrition_mea" formatted="false">Один JSON-файл: профиль, тренировки, питание, замеры, цели, рекорды, настройки и структура музыкальной библиотеки. Сами аудиофайлы не копируются.</string>
+    <string name="open_player" formatted="false">Открыть плеер</string>
+    <string name="open_privacy_policy" formatted="false">Открыть политику</string>
+    <string name="open_terms" formatted="false">Открыть соглашение</string>
+    <string name="personal_data" formatted="false">Личные данные</string>
+    <string name="personal_record" formatted="false">Личный рекорд</string>
+    <string name="personal_records" formatted="false">Личные рекорды</string>
+    <string name="plan" formatted="false">План</string>
+    <string name="play" formatted="false">Воспроизвести</string>
+    <string name="play_next" formatted="false">Воспроизвести следующим</string>
+    <string name="playlist_is_empty" formatted="false">Плейлист пуст</string>
+    <string name="playlists" formatted="false">Плейлисты</string>
+    <string name="preparing_gymflow" formatted="false">Подготавливаем GymFlow…</string>
+    <string name="preparing_home" formatted="false">Подготавливаем главный экран…</string>
+    <string name="previous" formatted="false">Предыдущий</string>
+    <string name="privacy_policy" formatted="false">Политика конфиденциальности</string>
+    <string name="profile" formatted="false">Профиль</string>
+    <string name="profile_context" formatted="false">Контекст профиля</string>
+    <string name="profile_workouts_nutrition_measurements_and" formatted="false">Профиль, тренировки, питание, замеры и настройки будут удалены. Музыкальные файлы на устройстве останутся.</string>
+    <string name="progress" formatted="false">ПРОГРЕСС</string>
+    <string name="protein" formatted="false">Белок</string>
+    <string name="protein_carbs" formatted="false">Белок • углеводы</string>
+    <string name="protein_carbs_vegetables" formatted="false">Белок + углеводы + овощи</string>
+    <string name="protein_carbs_vegetables_666dabf" formatted="false">Белок • углеводы • овощи</string>
+    <string name="protein_g" formatted="false">Белок, г</string>
+    <string name="protein_g_day" formatted="false">Белок, г/день</string>
+    <string name="pull_up_bar" formatted="false">Турник</string>
+    <string name="purple" formatted="false">Фиолетовый</string>
+    <string name="push_pull_legs" formatted="false">Жим / Тяга / Ноги</string>
+    <string name="queue" formatted="false">Очередь</string>
+    <string name="queue_is_empty" formatted="false">Очередь пуста</string>
+    <string name="quick_and_convenient_after_training" formatted="false">Быстро и удобно после зала</string>
+    <string name="quick_instructions" formatted="false">Краткая инструкция</string>
+    <string name="quick_water" formatted="false">Быстро добавить воду</string>
+    <string name="recently_added" formatted="false">Недавно добавленные</string>
+    <string name="record" formatted="false">РЕКОРД</string>
+    <string name="recovery" formatted="false">Восстановление</string>
+    <string name="regular" formatted="false">Тренируюсь</string>
+    <string name="remind_you_to_update_measurements_when_they" formatted="false">Напомнить обновить замеры, если прошло много времени</string>
+    <string name="reminder_to_update_weight_height_and_body_me" formatted="false">Напоминание обновить вес, рост и замеры тела</string>
+    <string name="reminders_on_selected_workout_days" formatted="false">Напоминания в выбранные тренировочные дни</string>
+    <string name="rename_playlist" formatted="false">Переименовать плейлист</string>
+    <string name="repeat" formatted="false">Повтор</string>
+    <string name="replace" formatted="false">Заменить</string>
+    <string name="reps" formatted="false">Повторы</string>
+    <string name="reset" formatted="false">Сброс</string>
+    <string name="reset_data" formatted="false">Сбросить данные</string>
+    <string name="resistance_bands" formatted="false">Резинки</string>
+    <string name="rest" formatted="false">Отдых</string>
+    <string name="rest_day" formatted="false">Сегодня отдых</string>
+    <string name="save" formatted="false">Сохранить</string>
+    <string name="save_targets" formatted="false">Сохранить цели</string>
+    <string name="saving_workout" formatted="false">Сохраняем тренировку…</string>
+    <string name="seconds" formatted="false">Секунды</string>
+    <string name="set_date_of_birth" formatted="false">Указать дату рождения</string>
+    <string name="set_up_gymflow" formatted="false">Настроим GymFlow</string>
+    <string name="setting_your_goals" formatted="false">Настраиваем цели…</string>
+    <string name="settings" formatted="false">Настройки</string>
+    <string name="settings_and_personal_data" formatted="false">Настройки и личные данные</string>
+    <string name="sex" formatted="false">Пол</string>
+    <string name="sex_for_calculation" formatted="false">Пол для расчёта</string>
+    <string name="short_messages_without_spam" formatted="false">Короткие сообщения без спама</string>
+    <string name="shuffle" formatted="false">Перемешать</string>
+    <string name="simple_food_ideas_choose_what_fits_your_appe" formatted="false">Простые варианты еды — выбери то, что подходит по аппетиту и обычному рациону.</string>
+    <string name="simple_protein_option" formatted="false">Простой белковый вариант</string>
+    <string name="since_first_entry" formatted="false">От первой записи: </string>
+    <string name="skip_for_now" formatted="false">Пропустить пока</string>
+    <string name="start_workout" formatted="false">Начать тренировку</string>
+    <string name="starting_data" formatted="false">Стартовые данные</string>
+    <string name="strength" formatted="false">Силовая</string>
+    <string name="stretching" formatted="false">Растяжка</string>
+    <string name="swipe_to_complete_set" formatted="false">Проведите, чтобы завершить подход</string>
+    <string name="system" formatted="false">Системный</string>
+    <string name="system_notification_settings" formatted="false">Системные настройки</string>
+    <string name="terms_of_use" formatted="false">Пользовательское соглашение</string>
+    <string name="text_100_kcal" formatted="false">+100 ккал</string>
+    <string name="text_100_kcal_0579299" formatted="false">−100 ккал</string>
+    <string name="text_10_g" formatted="false">+10 г</string>
+    <string name="text_10_g_927c88c" formatted="false">−10 г</string>
+    <string name="text_250_ml" formatted="false">+250 мл</string>
+    <string name="text_250_ml_dd3b388" formatted="false">−250 мл</string>
+    <string name="text_2_entries_needed" formatted="false">нужно 2 записи</string>
+    <string name="text_30_sec" formatted="false">+30 сек</string>
+    <string name="text_3_min_rest_water_breaks_included" formatted="false">Отдых 3 мин · время на воду учтено</string>
+    <string name="text_4_weeks" formatted="false">4 недели</string>
+    <string name="text_500_ml" formatted="false">+500 мл</string>
+    <string name="text_size" formatted="false">Размер текста</string>
+    <string name="the_language_applies_immediately_across_the" formatted="false">Язык применяется сразу ко всему интерфейсу.</string>
+    <string name="theme" formatted="false">Тема</string>
+    <string name="these_values_are_used_only_for_personalizati" formatted="false">Эти данные используются только для персонализации и прогресса.</string>
+    <string name="thigh" formatted="false">Бедро</string>
+    <string name="thigh_cm" formatted="false">Бедро, см</string>
+    <string name="this_entry_will_be_removed_from_history_and" formatted="false">Запись исчезнет из истории и графика.</string>
+    <string name="this_helps_choose_exercises_for_the_equipmen" formatted="false">Это поможет подобрать упражнения под доступное оборудование.</string>
+    <string name="this_workout_will_be_removed_from_history" formatted="false">Эта запись будет удалена из истории тренировок.</string>
+    <string name="time_to_move" formatted="false">Пора двигаться</string>
+    <string name="time_to_update_measurements" formatted="false">Пора обновить замеры</string>
+    <string name="time_to_update_progress" formatted="false">Пора обновить прогресс</string>
+    <string name="today" formatted="false">СЕГОДНЯ</string>
+    <string name="today_8dd7bf1" formatted="false">Сегодня</string>
+    <string name="today_protein_calories_and_water" formatted="false">Сегодня · белок, калории и вода</string>
+    <string name="today_protein_calories_and_water_21f9076" formatted="false">Сегодня • белок, калории и вода</string>
+    <string name="today_s_entries" formatted="false">Записи за сегодня</string>
+    <string name="today_s_protein" formatted="false">Белок на сегодня</string>
+    <string name="track_measurements_personal_records_and_work" formatted="false">Следите за замерами, личными рекордами и историей тренировок.</string>
+    <string name="track_protein_calories_and_water_throughout" formatted="false">Контролируйте белок, калории и воду в течение дня.</string>
+    <string name="tracks" formatted="false">Треки</string>
+    <string name="training" formatted="false">ТРЕНИРОВКИ</string>
+    <string name="training_experience" formatted="false">Стаж тренировок</string>
+    <string name="training_load" formatted="false">Тренировочная нагрузка</string>
+    <string name="training_progress_results" formatted="false">Тренировки. Прогресс. Результат.</string>
+    <string name="typical_day" formatted="false">Обычный день</string>
+    <string name="unit" formatted="false">Единица измерения</string>
+    <string name="unknown_album" formatted="false">Без альбома</string>
+    <string name="unknown_artist" formatted="false">Неизвестный исполнитель</string>
+    <string name="update" formatted="false">Обновить</string>
+    <string name="update_progress" formatted="false">Обновить прогресс</string>
+    <string name="update_weight_height_and_if_you_want_muscle" formatted="false">Обновите вес, рост и при желании обхваты мышц.</string>
+    <string name="updating_statistics" formatted="false">Обновляем статистику…</string>
+    <string name="upper_body" formatted="false">Верх тела</string>
+    <string name="upper_lower" formatted="false">Верх / Низ</string>
+    <string name="use_system_setting" formatted="false">Как в системе</string>
+    <string name="value_label" formatted="false">Значение</string>
+    <string name="very_active" formatted="false">Очень активный</string>
+    <string name="waist" formatted="false">Талия</string>
+    <string name="waist_0e51ebf" formatted="false">талия</string>
+    <string name="waist_cm" formatted="false">Талия, см</string>
+    <string name="water" formatted="false">Вода</string>
+    <string name="water_ml" formatted="false">Вода, мл</string>
+    <string name="water_ml_day" formatted="false">Вода, мл/день</string>
+    <string name="week" formatted="false">Неделя</string>
+    <string name="weight" formatted="false">Вес</string>
+    <string name="weight_height_and_body_measurements" formatted="false">Вес, рост и замеры тела</string>
+    <string name="weight_kg" formatted="false">Вес, кг</string>
+    <string name="what_equipment_do_you_have" formatted="false">Что у вас есть дома?</string>
+    <string name="what_should_we_call_you" formatted="false">Как к вам обращаться?</string>
+    <string name="what_you_ate" formatted="false">Что съел (по желанию)</string>
+    <string name="when_do_you_want_to_train" formatted="false">Когда вы хотите тренироваться?</string>
+    <string name="where_do_you_train" formatted="false">Где вы тренируетесь?</string>
+    <string name="workout_complete" formatted="false">Тренировка завершена</string>
+    <string name="workout_history" formatted="false">История тренировок</string>
+    <string name="workout_plan" formatted="false">План тренировки</string>
+    <string name="workout_recovery" formatted="false">Восстановление после тренировки</string>
+    <string name="workout_today" formatted="false">Сегодня тренировка</string>
+    <string name="workouts" formatted="false">Тренировки</string>
+    <string name="workouts_by_day" formatted="false">Тренировки по дням</string>
+    <string name="yesterday_s_protein" formatted="false">Белок за вчера</string>
+    <string name="yoga_style_mobility" formatted="false">Мобильность в стиле йоги</string>
+    <string name="you_can_add_muscle_measurements_later" formatted="false">Дополнительные замеры мышц можно добавить позже.</string>
+    <string name="your_latest_measurements_were_added_a_while" formatted="false">Последние данные были добавлены давно.</string>
+    <string name="your_local_library" formatted="false">Ваша локальная библиотека</string>
+    <string name="your_name_is_used_in_your_profile_home_scree" formatted="false">Имя используется в профиле, на главном экране и в мотивационных уведомлениях.</string>
+    <string name="feedback_body">Версия GymFlow: %1$s
+
+Опишите идею, баг или предложение:
+</string>
+    <string name="birth_date_dot">Дата рождения · %1$s</string>
+    <string name="birth_date_colon">Дата рождения: %1$s</string>
+    <string name="exercise_progress_count">%1$d / %2$d упражнений</string>
+    <string name="stages_minutes">%1$d этапов • ~%2$d мин</string>
+    <string name="rest_between_sets_minutes">Отдых между подходами: %1$d мин</string>
+    <string name="sets_count">%1$d подходов</string>
+    <string name="set_of">Подход %1$d из %2$d</string>
+    <string name="seconds_count">%1$s секунд</string>
+    <string name="reps_count">%1$s повторений</string>
+    <string name="queue_count">Очередь · %1$d</string>
+    <string name="file_access_lost">GymFlow больше не может открыть «%1$s». Выберите музыкальный файл снова, чтобы восстановить доступ.</string>
+    <string name="artist_info">Исполнитель: %1$s</string>
+    <string name="album_info">Альбом: %1$s</string>
+    <string name="duration_info">Длительность: %1$s</string>
+    <string name="tracks_count">%1$d треков</string>
+    <string name="protein_reminder_text">%1$sориентир на %2$s — около %3$d г белка.</string>
+    <string name="workout_today_named">%1$sсегодня тренировка. Осталось только начать.</string>
+    <string name="recovery_text">Проверь питание после тренировки. Твоя цель по белку: %1$d г в день.</string>
+    <string name="migrated_previous_version">Перенесено из предыдущей версии</string>
+    <string-array name="motivation_messages">
+        <item>%1$sсегодня тренировка. Осталось только начать.</item>
+        <item>Сегодня не нужен рекорд. Нужна тренировка.</item>
+        <item>Ещё одна тренировка — ещё один шаг к цели.</item>
+        <item>Первый подход — самый важный. После него ты уже тренируешься.</item>
+        <item>Начни с разминки. Дальше будет проще.</item>
+        <item>Сила строится повторениями, а не планами.</item>
+        <item>Не обязательно быть сильнее всех. Будь сильнее своей прошлой тренировки.</item>
+        <item>Открой тренировку. Остальное — по одному подходу.</item>
+        <item>Твой прошлый рекорд уже записан. Когда-нибудь его придётся побить.</item>
+        <item>Сегодняшние 40 минут лучше завтрашнего «начну обязательно».</item>
+        <item>Не гонись за идеальной тренировкой. Сделай сегодняшнюю.</item>
+        <item>Мотивация приходит и уходит. Расписание осталось.</item>
+        <item>%1$sGymFlow готов. Осталось только начать.</item>
+        <item>%1$sцель сама ближе не станет. Один подход — уже движение вперёд.</item>
+        <item>%1$sтвоя цель всё ещё здесь. Пора сделать к ней ещё один подход.</item>
+        <item>Вчерашний результат — ориентир. Сегодня можно сделать ещё немного.</item>
+        <item>Не хочется тренироваться? Начни с разминки и реши после неё.</item>
+        <item>Один пропущенный день ничего не решает. Но сегодня можно не пропускать.</item>
+        <item>Тренировка не обязана быть идеальной. Она должна состояться.</item>
+        <item>Пока кто-то откладывает тренировку, можно уже закончить первый подход.</item>
+        <item>%1$sпока остальные жмут сотку, можно сделать первый шаг к своей сотке.</item>
+        <item>Новый рекорд начинается не с последнего подхода, а с первого.</item>
+        <item>Устал до тренировки? Начни спокойно. Темп можно выбрать по ходу.</item>
+        <item>Не сравнивай сегодняшний первый подход с чьим-то десятым годом тренировок.</item>
+        <item>Цель записана. Теперь нужен ещё один день работы.</item>
+        <item>Сегодня можно не быть лучшим. Достаточно прийти и сделать своё.</item>
+        <item>Прогресс любит регулярность больше, чем редкие идеальные тренировки.</item>
+        <item>%1$sодин выполненный подход полезнее десяти мыслей о тренировке.</item>
+        <item>Откладывать можно бесконечно. Первый подход занимает несколько минут.</item>
+        <item>Закончишь тренировку — спасибо себе скажешь уже сегодня.</item>
+    </string-array>
+    <string name="language_russian">Русский</string>
+    <string name="language_english">English</string>
+    <string name="text_scale_preview">A</string>
+    <string name="telegram_official">GymFlow</string>
+    <string name="support_email">Fl2011you@gmail.com</string>
+    <string name="app_version_display">GymFlow 1.0</string>
+    <string name="plus_250_ml">+250 мл</string>
+    <string name="plus_500_ml">+500 мл</string>
+    <string name="protein_amount">%1$s г</string>
+    <string name="protein_amount_named">%1$s г белка</string>
+    <string name="calorie_amount">%1$d ккал</string>
+    <string name="water_amount">%1$d мл</string>
+    <string name="water_amount_named">%1$d мл воды</string>
+    <string name="auto_target_summary">Ориентир: %1$s · %2$s</string>
+    <string name="add_weight_height_measurements">добавьте вес и рост в Замерах</string>
+    <string name="add_weight_measurements">добавьте вес в Замерах</string>
+    <string-array name="weekdays_short">
+        <item>ПН</item>
+        <item>ВТ</item>
+        <item>СР</item>
+        <item>ЧТ</item>
+        <item>ПТ</item>
+        <item>СБ</item>
+        <item>ВС</item>
+    </string-array>
+    <string-array name="weekdays_full">
+        <item>Понедельник</item>
+        <item>Вторник</item>
+        <item>Среда</item>
+        <item>Четверг</item>
+        <item>Пятница</item>
+        <item>Суббота</item>
+        <item>Воскресенье</item>
+    </string-array>
+    <string-array name="months_date">
+        <item>января</item>
+        <item>февраля</item>
+        <item>марта</item>
+        <item>апреля</item>
+        <item>мая</item>
+        <item>июня</item>
+        <item>июля</item>
+        <item>августа</item>
+        <item>сентября</item>
+        <item>октября</item>
+        <item>ноября</item>
+        <item>декабря</item>
+    </string-array>
+    <string name="play_pause">Воспроизведение / пауза</string>
+    <string name="move_up">Переместить выше</string>
+    <string name="move_down">Переместить ниже</string>
+    <string name="remove">Удалить из списка</string>
+    <string name="open_profile">Открыть профиль</string>
+    <string name="steps_duration_label">%1$d этапов · %2$s</string>
+    <string name="date_sets_label">%1$s · %2$d подходов</string>
+    <string name="value_with_unit">%1$s %2$s</string>
+    <string name="age_years">%1$d лет</string>
+    <string name="sets_short_count">%1$d подх.</string>
+    <string name="date_day_month">%1$d %2$s</string>
+    <string name="date_month_day">%1$s %2$d</string>
+    <string name="minutes_short">%1$d мин</string>
+    <string name="upper_arm_short">рука</string>
+    <string name="forearm_short">предплечье</string>
+    <string name="chest_short">грудь</string>
+    <string name="thigh_short">бедро</string>
+    <string name="calf_short">икра</string>
+    <string name="delta_value_unit">%1$s%2$s %3$s</string>
+    <string-array name="home_motivation_messages">
+        <item>%1$sсегодня тренировка. Осталось только начать.</item>
+        <item>Сегодня не нужен рекорд. Нужна тренировка.</item>
+        <item>Ещё одна тренировка — ещё один шаг к цели.</item>
+        <item>Первый подход — самый важный. После него ты уже тренируешься.</item>
+        <item>Начни с разминки. Дальше будет проще.</item>
+        <item>Сила строится повторениями, а не планами.</item>
+        <item>Не обязательно быть сильнее всех. Будь сильнее своей прошлой тренировки.</item>
+        <item>Открой тренировку. Остальное — по одному подходу.</item>
+        <item>Твой прошлый рекорд уже записан. Когда-нибудь его придётся побить.</item>
+        <item>Сегодняшние 40 минут лучше завтрашнего «начну обязательно».</item>
+        <item>Не гонись за идеальной тренировкой. Сделай сегодняшнюю.</item>
+        <item>Мотивация приходит и уходит. Расписание осталось.</item>
+        <item>%1$sGymFlow готов. Осталось только начать.</item>
+        <item>%1$sцель сама ближе не станет. Один подход — уже движение вперёд.</item>
+        <item>%1$sтвоя цель всё ещё здесь. Пора сделать к ней ещё один подход.</item>
+        <item>Вчерашний результат — ориентир. Сегодня можно сделать ещё немного.</item>
+        <item>Не хочется тренироваться? Начни с разминки и реши после неё.</item>
+        <item>Один пропущенный день ничего не решает. Но сегодня можно не пропускать.</item>
+        <item>Тренировка не обязана быть идеальной. Она должна состояться.</item>
+        <item>Пока кто-то откладывает тренировку, можно уже закончить первый подход.</item>
+        <item>%1$sпока остальные жмут сотку, можно сделать первый шаг к своей сотке.</item>
+        <item>Новый рекорд начинается не с последнего подхода, а с первого.</item>
+        <item>Устал до тренировки? Начни спокойно. Темп можно выбрать по ходу.</item>
+        <item>Не сравнивай сегодняшний первый подход с чьим-то десятым годом тренировок.</item>
+        <item>Цель записана. Теперь нужен ещё один день работы.</item>
+        <item>Сегодня можно не быть лучшим. Достаточно прийти и сделать своё.</item>
+        <item>Прогресс любит регулярность больше, чем редкие идеальные тренировки.</item>
+        <item>%1$sодин выполненный подход полезнее десяти мыслей о тренировке.</item>
+        <item>Откладывать можно бесконечно. Первый подход занимает несколько минут.</item>
+        <item>Закончишь тренировку — спасибо себе скажешь уже сегодня.</item>
+    </string-array>
+    <string name="duration_hours_plus">%1$d ч+</string>
+    <string name="duration_hours_minutes_plus">%1$d ч %2$d мин+</string>
+    <string name="muscle_hamstrings">Задняя поверхность бедра</string>
+    <string name="muscle_quads">Квадрицепс</string>
+    <string name="muscle_glutes">Ягодицы</string>
+    <string name="muscle_hips">Бедро</string>
+    <string name="muscle_calves">Икры и голень</string>
+    <string name="muscle_core">Пресс</string>
+    <string name="muscle_triceps">Трицепс</string>
+    <string name="muscle_chest">Грудь</string>
+    <string name="muscle_back">Спина</string>
+    <string name="muscle_shoulders">Плечи</string>
+    <string name="muscle_forearms">Предплечья</string>
+    <string name="muscle_biceps">Бицепс</string>
+    <string name="pause">Пауза</string>
+    <string name="reps_unit">раз</string>
+    <string name="sec_unit">сек</string>
+    <string name="add_one_more_measurement_for_a_chart">Добавьте ещё один замер, чтобы построить график.</string>
+    <string name="unsupported_gymflow_backup_file">Неподдерживаемый файл GymFlow</string>
+    <string name="unsupported_backup_version">Неподдерживаемая версия резервной копии</string>
+    <string name="backup_profile_missing">В резервной копии нет профиля</string>
+    <string name="tell_us_about_yourself">Расскажите о себе</string>
+    <string name="birth_date">Дата рождения</string>
+    <string name="select_birth_date">Выберите дату рождения</string>
+    <string name="month">месяц</string>
+    <string name="year">год</string>
+    <string name="select_height">Выберите рост</string>
+    <string name="select_weight">Выберите вес</string>
+    <string name="body_data_subtitle">Дата рождения, пол, рост и вес используются только для персонализации.</string>
+    <string name="height_value">%1$d см</string>
+    <string name="weight_value">%1$d кг</string>
+    <string-array name="months_wheel">
+        <item>январь</item>
+        <item>февраль</item>
+        <item>март</item>
+        <item>апрель</item>
+        <item>май</item>
+        <item>июнь</item>
+        <item>июль</item>
+        <item>август</item>
+        <item>сентябрь</item>
+        <item>октябрь</item>
+        <item>ноябрь</item>
+        <item>декабрь</item>
+    </string-array>
+    <string name="birth_date_display">%1$d %2$s %3$d</string>
+
+    <string name="get_started">Начать</string>
+    <string name="already_used_gymflow">Уже пользовались GymFlow?</string>
+    <string name="intro_headline">Твоя тренировка — от первого подхода до нового рекорда.</string>
+    <string name="intro_why_title">Всё важное для прогресса — в одном месте</string>
+    <string name="intro_summary">Настрой GymFlow под себя один раз: выбери место и дни тренировок, укажи цели и доступное оборудование. Дальше приложение поможет вести программу, подходы и отдых, питание, замеры, рекорды и историю — без лишней суеты.</string>
+    <string name="intro_training_title">Тренировки под тебя</string>
+    <string name="intro_training_text">Зал или дом, гантели или турник — GymFlow учитывает твои условия, выбранные дни и программу. Упражнения можно настроить по дням, заменить и переставить в удобном порядке.</string>
+    <string name="intro_workout_title">Всё нужное во время тренировки</string>
+    <string name="intro_workout_text">На экране остаются техника, рабочие мышцы, частые ошибки и текущий подход. Заверши подход свайпом, отдохни по таймеру и переходи дальше шаг за шагом.</string>
+    <string name="intro_set_preview">Подход 2 из 4 • 60 кг × 10</string>
+    <string name="intro_progress_title">Прогресс, цели и рекорды</string>
+    <string name="intro_progress_text">Сохраняй замеры тела, историю тренировок и личные рекорды. Создавай свои цели и следи за мышечной нагрузкой за последние недели.</string>
+    <string name="intro_nutrition_title">Питание без сложных таблиц</string>
+    <string name="intro_nutrition_text">Установи дневные цели по белку, калориям и воде. Быстрые кнопки помогают отмечать значения в течение дня, а прогресс показывает, сколько осталось до цели.</string>
+    <string name="intro_music_title">Своя музыка во время тренировки</string>
+    <string name="intro_music_text">Импортируй треки с устройства, управляй воспроизведением через Mini Player, очередь, перемотку, shuffle и repeat — музыка продолжит играть при переходе к тренировке.</string>
+    <string name="intro_reminders_title">Напоминания, которые можно настроить</string>
+    <string name="intro_reminders_text">GymFlow может напомнить о тренировке, белке и новых замерах, а иногда показать короткую мотивацию. Каждый тип уведомлений можно отключить отдельно.</string>
+    <string name="intro_data_title">Твои данные можно забрать с собой</string>
+    <string name="intro_data_text">Профиль, программа, питание, замеры, цели, рекорды, история и настройки сохраняются локально и могут быть перенесены через резервную копию Import / Export.</string>
+    <string name="intro_local_storage_badge">Локальные данные</string>
+    <string name="intro_personalize_title">Настрой внешний вид под себя</string>
+    <string name="intro_personalize_text">Русский и English, светлая, тёмная или системная тема, несколько цветовых палитр и удобный размер текста — интерфейс можно сделать своим.</string>
+    <string name="intro_ready_title">Готов начать?</string>
+    <string name="intro_ready_text">Ответь на несколько вопросов — GymFlow подготовит расписание и программу под твои настройки. Всё это можно изменить позже.</string>
+    <string name="mini_player">Mini Player</string>
+    <string name="telegram">Telegram</string>
+    <string name="telegram_gymflow">GymFlow</string>
+    <string name="terms_full_text">GymFlow помогает вести тренировки, питание, замеры, цели и историю прогресса. Пользователь самостоятельно выбирает нагрузки, упражнения и дневные цели и несёт ответственность за их соответствие своему состоянию и уровню подготовки. GymFlow не является медицинским сервисом и не предназначен для диагностики или лечения заболеваний. Если упражнение вызывает боль, головокружение или выраженный дискомфорт, прекратите его выполнение и при необходимости обратитесь к специалисту. Используя приложение, вы соглашаетесь использовать его функции разумно и в соответствии с законодательством вашей страны.</string>
+    <string name="privacy_full_text">Основные данные GymFlow хранятся локально на вашем устройстве. К ним могут относиться профиль, дата рождения, параметры тела, расписание и история тренировок, питание, замеры, цели, рекорды, настройки и ссылки на выбранные музыкальные файлы. GymFlow не отправляет эти данные в собственное облако. Экспорт резервной копии выполняется только по вашему действию. Аудиофайлы не помещаются внутрь JSON-резервной копии. Вы можете удалить данные GymFlow через сброс в настройках; оригинальные музыкальные файлы на устройстве при этом не удаляются.</string>
+
+</resources>
