@@ -173,7 +173,7 @@ private fun dailyMotivation(p: UserProfile, d: LocalDate): String {
     val l = p.appLanguage
     val name = p.firstName.takeIf { it.isNotBlank() }?.plus(", ").orEmpty()
     val list = gsa(l, R.array.home_motivation_messages)
-    return list[d.dayOfYear % list.size].replace("%1$s", name)
+    return list[d.dayOfYear % list.size].replace("%1\$s", name)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
