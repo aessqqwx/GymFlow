@@ -1,0 +1,627 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GymFlow</string>
+    <string name="a_full_meal" formatted="false">A full meal</string>
+    <string name="a_personal_home_or_gym_program_for_the_days" formatted="false">A personal home or gym program for the days you choose.</string>
+    <string name="about" formatted="false">About</string>
+    <string name="active" formatted="false">Active</string>
+    <string name="activity" formatted="false">Activity</string>
+    <string name="add" formatted="false">Add</string>
+    <string name="add_a_value_to_keep_your_stats_complete" formatted="false">Add a value to keep your stats complete.</string>
+    <string name="add_data" formatted="false">Add data</string>
+    <string name="add_entry" formatted="false">Add entry</string>
+    <string name="add_exercise" formatted="false">Add exercise</string>
+    <string name="add_food_and_water_throughout_the_day" formatted="false">Add food and water throughout the day</string>
+    <string name="add_food_protein_calories_or_water_fill_only" formatted="false">Add food, protein, calories or water — fill only the fields you need.</string>
+    <string name="add_measurements" formatted="false">Add measurements</string>
+    <string name="add_muscle_measurements" formatted="false">Add muscle measurements</string>
+    <string name="add_nutrition" formatted="false">Add nutrition</string>
+    <string name="add_only_the_measurements_you_want_to_track" formatted="false">Add only the measurements you want to track.</string>
+    <string name="add_record" formatted="false">Add record</string>
+    <string name="add_to_playlist" formatted="false">Add to playlist</string>
+    <string name="add_to_queue" formatted="false">Add to queue</string>
+    <string name="add_tracks_from_a_track_menu" formatted="false">Add tracks from a track menu.</string>
+    <string name="add_tracks_from_the_music_library" formatted="false">Add tracks from the music library.</string>
+    <string name="add_weight_or_height_and_your_history_will_s" formatted="false">Add weight or height and your history will stay here.</string>
+    <string name="add_your_current_personal_record" formatted="false">Add your current personal record.</string>
+    <string name="add_your_current_weight_and_height_you_can_u" formatted="false">Add your current weight and height. You can update muscle measurements too.</string>
+    <string name="add_your_first_measurement_to_see_history" formatted="false">Add your first measurement to see history.</string>
+    <string name="added_today" formatted="false">Added today</string>
+    <string name="after_workout" formatted="false">After workout</string>
+    <string name="age" formatted="false">Age</string>
+    <string name="age_sex_experience" formatted="false">Age · sex · experience</string>
+    <string name="albums" formatted="false">Albums</string>
+    <string name="all_food_protein_calorie_and_water_settings" formatted="false">All food, protein, calorie and water settings</string>
+    <string name="almost_ready" formatted="false">Almost ready</string>
+    <string name="analyzing_your_data" formatted="false">Analyzing your data…</string>
+    <string name="appearance" formatted="false">Appearance</string>
+    <string name="arm_biceps" formatted="false">Arm / biceps</string>
+    <string name="arm_cm" formatted="false">Arm, cm</string>
+    <string name="artists" formatted="false">Artists</string>
+    <string name="audio_file" formatted="false">Audio file</string>
+    <string name="back" formatted="false">Back</string>
+    <string name="barbells_machines_dumbbells_and_other_equipm" formatted="false">Barbells, machines, dumbbells and other equipment.</string>
+    <string name="basic_data" formatted="false">Basic data</string>
+    <string name="basic_data_for_tracking_training_progress" formatted="false">Basic data for tracking training progress.</string>
+    <string name="basic_profile_data_is_used_for_personalizati" formatted="false">Basic profile data is used for personalization. Weight, height and body measurements are kept in Measurements, while nutrition stays in the Nutrition tab.</string>
+    <string name="basic_program" formatted="false">Basic program</string>
+    <string name="beginner" formatted="false">Beginner</string>
+    <string name="bench" formatted="false">Bench</string>
+    <string name="biceps" formatted="false">Biceps</string>
+    <string name="biceps_cm" formatted="false">Biceps, cm</string>
+    <string name="blue" formatted="false">Blue</string>
+    <string name="body_goals_and_workout_history" formatted="false">Body, goals and workout history</string>
+    <string name="body_measurements" formatted="false">Body measurements</string>
+    <string name="bodyweight" formatted="false">Bodyweight</string>
+    <string name="bodyweight_dumbbells_a_pull_up_bar_and_minim" formatted="false">Bodyweight, dumbbells, a pull-up bar and minimal equipment.</string>
+    <string name="bodyweight_only" formatted="false">Bodyweight only</string>
+    <string name="brown" formatted="false">Brown</string>
+    <string name="buckwheat_or_rice_meat" formatted="false">Buckwheat or rice + meat</string>
+    <string name="calculating_training_load" formatted="false">Calculating training load…</string>
+    <string name="calf" formatted="false">Calf</string>
+    <string name="calf_cm" formatted="false">Calf, cm</string>
+    <string name="calories" formatted="false">Calories</string>
+    <string name="calories_kcal" formatted="false">Calories, kcal</string>
+    <string name="calories_kcal_day" formatted="false">Calories, kcal/day</string>
+    <string name="cancel" formatted="false">Cancel</string>
+    <string name="checking_personal_records" formatted="false">Checking personal records…</string>
+    <string name="chest" formatted="false">Chest</string>
+    <string name="chest_73481ed" formatted="false">chest</string>
+    <string name="chest_cm" formatted="false">Chest, cm</string>
+    <string name="choose_a_program" formatted="false">Choose a program</string>
+    <string name="choose_a_track" formatted="false">Choose a track</string>
+    <string name="choose_at_least_one_day" formatted="false">Choose at least one day.</string>
+    <string name="choose_file" formatted="false">Choose file</string>
+    <string name="choose_photo" formatted="false">Choose photo</string>
+    <string name="choose_your_language" formatted="false">Choose your language</string>
+    <string name="choosing_your_program" formatted="false">Choosing your program…</string>
+    <string name="clear" formatted="false">Clear</string>
+    <string name="close" formatted="false">Close</string>
+    <string name="cm" formatted="false">cm</string>
+    <string name="color_scheme" formatted="false">Color scheme</string>
+    <string name="common_mistakes" formatted="false">Common mistakes</string>
+    <string name="complete_your_basic_data" formatted="false">Complete your basic data</string>
+    <string name="completed_workouts_will_appear_here_and_stay" formatted="false">Completed workouts will appear here and stay after restarting the app.</string>
+    <string name="continue_action" formatted="false">Continue</string>
+    <string name="continue_workout" formatted="false">Continue workout</string>
+    <string name="cottage_cheese_fruit" formatted="false">Cottage cheese + fruit</string>
+    <string name="could_not_export_data" formatted="false">Could not export data</string>
+    <string name="could_not_import_this_file" formatted="false">Could not import this file</string>
+    <string name="create_a_goal_with_a_name_value_and_unit" formatted="false">Create a goal with a name, value and unit.</string>
+    <string name="create_a_playlist_and_add_your_favorite_trac" formatted="false">Create a playlist and add your favorite tracks.</string>
+    <string name="create_a_playlist_first" formatted="false">Create a playlist first.</string>
+    <string name="create_goal" formatted="false">Create goal</string>
+    <string name="create_playlist" formatted="false">Create playlist</string>
+    <string name="daily_goals" formatted="false">Daily goals</string>
+    <string name="daily_target" formatted="false">Daily target</string>
+    <string name="dark" formatted="false">Dark</string>
+    <string name="data_section" formatted="false">Data</string>
+    <string name="date_of_birth_height_and_weight_help_gymflow" formatted="false">Date of birth, height and weight help GymFlow show your progress more accurately.</string>
+    <string name="day" formatted="false">day</string>
+    <string name="default" formatted="false">Default</string>
+    <string name="delete" formatted="false">Delete</string>
+    <string name="delete_all_gymflow_data" formatted="false">Delete all GymFlow data?</string>
+    <string name="delete_measurement" formatted="false">Delete measurement?</string>
+    <string name="delete_workout" formatted="false">Delete workout</string>
+    <string name="delete_workout_98e043c" formatted="false">Delete workout?</string>
+    <string name="description" formatted="false">Description</string>
+    <string name="device_accent_with_gymflow_neutral_surfaces" formatted="false">Device accent with GymFlow neutral surfaces</string>
+    <string name="distributing_exercises" formatted="false">Distributing exercises…</string>
+    <string name="do_not_specify_date_of_birth" formatted="false">Do not specify date of birth</string>
+    <string name="done" formatted="false">Done</string>
+    <string name="dumbbells" formatted="false">Dumbbells</string>
+    <string name="dumbbells_pull_up_bar" formatted="false">Dumbbells + pull-up bar</string>
+    <string name="edit" formatted="false">Edit</string>
+    <string name="edit_a190f4d" formatted="false">Edit</string>
+    <string name="edit_data" formatted="false">Edit data</string>
+    <string name="edit_nutrition" formatted="false">Edit nutrition</string>
+    <string name="edit_profile" formatted="false">Edit profile</string>
+    <string name="eggs_bread_tomatoes" formatted="false">Eggs + bread + tomatoes</string>
+    <string name="eggs_bread_vegetables" formatted="false">Eggs + bread + vegetables</string>
+    <string name="enter_your_own_targets_you_can_change_them_l" formatted="false">Enter your own targets — you can change them later.</string>
+    <string name="entry" formatted="false">Entry</string>
+    <string name="evening" formatted="false">evening</string>
+    <string name="expand_a_day_to_disable_replace_or_reorder_e" formatted="false">Expand a day to disable, replace or reorder exercises.</string>
+    <string name="experience" formatted="false">Experience</string>
+    <string name="export" formatted="false">Export</string>
+    <string name="feedback" formatted="false">Feedback</string>
+    <string name="female" formatted="false">Female</string>
+    <string name="file_access_required" formatted="false">File access required</string>
+    <string name="finish_a_workout_to_see_your_load_distributi" formatted="false">Finish a workout to see your load distribution here.</string>
+    <string name="finish_rest" formatted="false">Finish rest</string>
+    <string name="finish_your_first_workout_to_see_history" formatted="false">Finish your first workout to see history.</string>
+    <string name="finish_your_first_workout_to_see_load_distri" formatted="false">Finish your first workout to see load distribution.</string>
+    <string name="first_name" formatted="false">First name</string>
+    <string name="forearm" formatted="false">Forearm</string>
+    <string name="forearm_cm" formatted="false">Forearm, cm</string>
+    <string name="full_body" formatted="false">Full Body</string>
+    <string name="g" formatted="false">g</string>
+    <string name="g_protein" formatted="false">g protein</string>
+    <string name="goal" formatted="false">GOAL</string>
+    <string name="goal_c58da1c" formatted="false">Goal</string>
+    <string name="goals" formatted="false">Goals</string>
+    <string name="got_it" formatted="false">Got it</string>
+    <string name="green" formatted="false">Green</string>
+    <string name="gym" formatted="false">GYM</string>
+    <string name="gymflow_can_remind_you_about_training_and_yo" formatted="false">GymFlow can remind you about training and your goals.</string>
+    <string name="gymflow_data_exported" formatted="false">GymFlow data exported</string>
+    <string name="gymflow_data_is_stored_locally_on_your_devic" formatted="false">GymFlow data is stored locally on your device and may include your profile, workouts, nutrition and measurements. Export only happens when you request it. You can reset your data in Settings.</string>
+    <string name="gymflow_data_is_stored_locally_on_your_devic_331136c" formatted="false">GymFlow data is stored locally on your device. Export happens only when you request it. Music files are not embedded in the JSON backup, and local music links may require renewed access after restoring a backup.</string>
+    <string name="gymflow_data_restored" formatted="false">GymFlow data restored</string>
+    <string name="gymflow_feedback" formatted="false">GymFlow — feedback</string>
+    <string name="gymflow_helps_you_track_workouts_nutrition_a" formatted="false">GymFlow helps you track workouts, nutrition and progress. You choose your own training loads and targets. The app does not replace professional advice and is not intended to diagnose or treat medical conditions.</string>
+    <string name="gymflow_helps_you_track_workouts_nutrition_a_cbeee16" formatted="false">GymFlow helps you track workouts, nutrition and progress. You choose your own training loads and targets. The app does not replace professional advice and must not be used to diagnose or treat medical conditions.</string>
+    <string name="gymflow_reminders" formatted="false">GymFlow · reminders</string>
+    <string name="height" formatted="false">Height</string>
+    <string name="height_cm" formatted="false">Height, cm</string>
+    <string name="height_weight_and_sex" formatted="false">Height, weight and sex</string>
+    <string name="hide_muscle_measurements" formatted="false">Hide muscle measurements</string>
+    <string name="high_protein_milk_or_yogurt" formatted="false">High-protein milk or yogurt</string>
+    <string name="home" formatted="false">HOME</string>
+    <string name="home_9dd0b33" formatted="false">Home</string>
+    <string name="how_gymflow_uses_data" formatted="false">How GymFlow uses data</string>
+    <string name="i_accept_the_terms_of_use" formatted="false">I accept the Terms of Use</string>
+    <string name="i_have_read_the_privacy_policy" formatted="false">I have read the Privacy Policy</string>
+    <string name="if_reminders_are_enabled_gymflow_will_remind" formatted="false">If reminders are enabled, GymFlow will remind you to check nutrition and recovery in 45 minutes.</string>
+    <string name="import_action" formatted="false">Import</string>
+    <string name="import_data" formatted="false">Import data</string>
+    <string name="import_local_audio_files_gymflow_will_not_cr" formatted="false">Import local audio files — GymFlow will not create unnecessary copies.</string>
+    <string name="import_music" formatted="false">Import music</string>
+    <string name="import_music_to_see_albums" formatted="false">Import music to see albums.</string>
+    <string name="import_music_to_see_artists" formatted="false">Import music to see artists.</string>
+    <string name="in_3_days" formatted="false">In 3 days</string>
+    <string name="in_progress" formatted="false">IN PROGRESS</string>
+    <string name="information" formatted="false">Information</string>
+    <string name="interface_language" formatted="false">Interface language</string>
+    <string name="jerking_or_losing_control_of_the_movement" formatted="false">Jerking or losing control of the movement</string>
+    <string name="kcal" formatted="false">kcal</string>
+    <string name="kg" formatted="false">kg</string>
+    <string name="language" formatted="false">Language</string>
+    <string name="last_name" formatted="false">Last name</string>
+    <string name="last_workout" formatted="false">Last workout</string>
+    <string name="latest_entry" formatted="false">latest entry</string>
+    <string name="legs_glutes" formatted="false">Legs &amp; glutes</string>
+    <string name="light" formatted="false">Light</string>
+    <string name="lightly_active" formatted="false">Lightly active</string>
+    <string name="listen_to_your_own_music_while_you_train" formatted="false">Listen to your own music while you train.</string>
+    <string name="male" formatted="false">Male</string>
+    <string name="master_switch_for_all_gymflow_notifications" formatted="false">Master switch for all GymFlow notifications</string>
+    <string name="measurement" formatted="false">Measurement</string>
+    <string name="measurement_history" formatted="false">Measurement history</string>
+    <string name="measurements" formatted="false">Measurements</string>
+    <string name="menu" formatted="false">Menu</string>
+    <string name="mixed_home_program" formatted="false">Mixed home program</string>
+    <string name="ml" formatted="false">ml</string>
+    <string name="mobility" formatted="false">Mobility</string>
+    <string name="monochrome" formatted="false">Monochrome</string>
+    <string name="monthly_progress" formatted="false">Monthly progress</string>
+    <string name="monthly_update" formatted="false">Monthly update</string>
+    <string name="morning" formatted="false">morning</string>
+    <string name="morning_afternoon_and_evening_based_on_your" formatted="false">Morning, afternoon and evening based on your goal</string>
+    <string name="motivation" formatted="false">MOTIVATION</string>
+    <string name="motivation_14df0e8" formatted="false">Motivation</string>
+    <string name="move_smoothly_and_under_control" formatted="false">Move smoothly and under control.</string>
+    <string name="muscle_load" formatted="false">Muscle load</string>
+    <string name="muscle_measurements" formatted="false">Muscle measurements</string>
+    <string name="muscle_measurements_7d84fc7" formatted="false">Muscle measurements</string>
+    <string name="music" formatted="false">MUSIC</string>
+    <string name="music_df4392a" formatted="false">Music</string>
+    <string name="name" formatted="false">Name</string>
+    <string name="new_measurement" formatted="false">New measurement</string>
+    <string name="new_measurement_68b97bf" formatted="false">New measurement</string>
+    <string name="new_playlist" formatted="false">New playlist</string>
+    <string name="new_progress_entry" formatted="false">New progress entry</string>
+    <string name="next" formatted="false">NEXT</string>
+    <string name="next_c59db3d" formatted="false">Next</string>
+    <string name="next_exercise" formatted="false">Next exercise: </string>
+    <string name="next_f0059de" formatted="false">Next</string>
+    <string name="next_set" formatted="false">Next set</string>
+    <string name="no_albums_yet" formatted="false">No albums yet</string>
+    <string name="no_artists_yet" formatted="false">No artists yet</string>
+    <string name="no_change" formatted="false">no change</string>
+    <string name="no_email_app_found" formatted="false">No email app found</string>
+    <string name="no_goals_yet" formatted="false">No goals yet</string>
+    <string name="no_measurements_yet" formatted="false">No measurements yet</string>
+    <string name="no_music_yet" formatted="false">No music yet</string>
+    <string name="no_playlists_yet" formatted="false">No playlists yet</string>
+    <string name="no_protein_data_for_yesterday" formatted="false">No protein data for yesterday</string>
+    <string name="no_records_yet" formatted="false">No records yet</string>
+    <string name="no_workouts_yet" formatted="false">No workouts yet</string>
+    <string name="not_specified" formatted="false">Not specified</string>
+    <string name="note" formatted="false">Note</string>
+    <string name="note_90fdad8" formatted="false">Note</string>
+    <string name="notifications" formatted="false">Notifications</string>
+    <string name="nutrition" formatted="false">NUTRITION</string>
+    <string name="nutrition_294139b" formatted="false">Nutrition</string>
+    <string name="nutrition_and_recovery_reminders_after_worko" formatted="false">Nutrition and recovery reminders after workouts</string>
+    <string name="nutrition_entry" formatted="false">Nutrition entry</string>
+    <string name="nutrition_protein" formatted="false">Nutrition / protein</string>
+    <string name="nutrition_targets" formatted="false">Nutrition targets</string>
+    <string name="off" formatted="false">Off</string>
+    <string name="on" formatted="false">On</string>
+    <string name="once_a_month_we_can_remind_you_to_update_wei" formatted="false">Once a month we can remind you to update weight, height and body measurements.</string>
+    <string name="one_json_file_profile_workouts_nutrition_mea" formatted="false">One JSON file: profile, workouts, nutrition, measurements, goals, records, settings and music-library structure. Audio files themselves are not copied.</string>
+    <string name="open_player" formatted="false">Open player</string>
+    <string name="open_privacy_policy" formatted="false">Open Privacy Policy</string>
+    <string name="open_terms" formatted="false">Open Terms</string>
+    <string name="personal_data" formatted="false">Personal data</string>
+    <string name="personal_record" formatted="false">Personal record</string>
+    <string name="personal_records" formatted="false">Personal records</string>
+    <string name="plan" formatted="false">Plan</string>
+    <string name="play" formatted="false">Play</string>
+    <string name="play_next" formatted="false">Play next</string>
+    <string name="playlist_is_empty" formatted="false">Playlist is empty</string>
+    <string name="playlists" formatted="false">Playlists</string>
+    <string name="preparing_gymflow" formatted="false">Preparing GymFlow…</string>
+    <string name="preparing_home" formatted="false">Preparing Home…</string>
+    <string name="previous" formatted="false">Previous</string>
+    <string name="privacy_policy" formatted="false">Privacy Policy</string>
+    <string name="profile" formatted="false">Profile</string>
+    <string name="profile_context" formatted="false">Profile context</string>
+    <string name="profile_workouts_nutrition_measurements_and" formatted="false">Profile, workouts, nutrition, measurements and settings will be deleted. Music files on your device will stay untouched.</string>
+    <string name="progress" formatted="false">PROGRESS</string>
+    <string name="protein" formatted="false">Protein</string>
+    <string name="protein_carbs" formatted="false">Protein • carbs</string>
+    <string name="protein_carbs_vegetables" formatted="false">Protein + carbs + vegetables</string>
+    <string name="protein_carbs_vegetables_666dabf" formatted="false">Protein • carbs • vegetables</string>
+    <string name="protein_g" formatted="false">Protein, g</string>
+    <string name="protein_g_day" formatted="false">Protein, g/day</string>
+    <string name="pull_up_bar" formatted="false">Pull-up bar</string>
+    <string name="purple" formatted="false">Purple</string>
+    <string name="push_pull_legs" formatted="false">Push / Pull / Legs</string>
+    <string name="queue" formatted="false">Queue</string>
+    <string name="queue_is_empty" formatted="false">Queue is empty</string>
+    <string name="quick_and_convenient_after_training" formatted="false">Quick and convenient after training</string>
+    <string name="quick_instructions" formatted="false">Quick instructions</string>
+    <string name="quick_water" formatted="false">Quick water</string>
+    <string name="recently_added" formatted="false">Recently added</string>
+    <string name="record" formatted="false">RECORD</string>
+    <string name="recovery" formatted="false">Recovery</string>
+    <string name="regular" formatted="false">Regular</string>
+    <string name="remind_you_to_update_measurements_when_they" formatted="false">Remind you to update measurements when they are stale</string>
+    <string name="reminder_to_update_weight_height_and_body_me" formatted="false">Reminder to update weight, height and body measurements</string>
+    <string name="reminders_on_selected_workout_days" formatted="false">Reminders on selected workout days</string>
+    <string name="rename_playlist" formatted="false">Rename playlist</string>
+    <string name="repeat" formatted="false">Repeat</string>
+    <string name="replace" formatted="false">Replace</string>
+    <string name="reps" formatted="false">Reps</string>
+    <string name="reset" formatted="false">Reset</string>
+    <string name="reset_data" formatted="false">Reset data</string>
+    <string name="resistance_bands" formatted="false">Resistance bands</string>
+    <string name="rest" formatted="false">Rest</string>
+    <string name="rest_day" formatted="false">Rest day</string>
+    <string name="save" formatted="false">Save</string>
+    <string name="save_targets" formatted="false">Save targets</string>
+    <string name="saving_workout" formatted="false">Saving workout…</string>
+    <string name="seconds" formatted="false">Seconds</string>
+    <string name="set_date_of_birth" formatted="false">Set date of birth</string>
+    <string name="set_up_gymflow" formatted="false">Set up GymFlow</string>
+    <string name="setting_your_goals" formatted="false">Setting your goals…</string>
+    <string name="settings" formatted="false">Settings</string>
+    <string name="settings_and_personal_data" formatted="false">Settings and personal data</string>
+    <string name="sex" formatted="false">Sex</string>
+    <string name="sex_for_calculation" formatted="false">Sex for calculation</string>
+    <string name="short_messages_without_spam" formatted="false">Short messages without spam</string>
+    <string name="shuffle" formatted="false">Shuffle</string>
+    <string name="simple_food_ideas_choose_what_fits_your_appe" formatted="false">Simple food ideas — choose what fits your appetite and usual diet.</string>
+    <string name="simple_protein_option" formatted="false">Simple protein option</string>
+    <string name="since_first_entry" formatted="false">Since first entry: </string>
+    <string name="skip_for_now" formatted="false">Skip for now</string>
+    <string name="start_workout" formatted="false">Start workout</string>
+    <string name="starting_data" formatted="false">Starting data</string>
+    <string name="strength" formatted="false">Strength</string>
+    <string name="stretching" formatted="false">Stretching</string>
+    <string name="swipe_to_complete_set" formatted="false">Swipe to complete set</string>
+    <string name="system" formatted="false">System</string>
+    <string name="system_notification_settings" formatted="false">System notification settings</string>
+    <string name="terms_of_use" formatted="false">Terms of Use</string>
+    <string name="text_100_kcal" formatted="false">+100 kcal</string>
+    <string name="text_100_kcal_0579299" formatted="false">−100 kcal</string>
+    <string name="text_10_g" formatted="false">+10 g</string>
+    <string name="text_10_g_927c88c" formatted="false">−10 g</string>
+    <string name="text_250_ml" formatted="false">+250 ml</string>
+    <string name="text_250_ml_dd3b388" formatted="false">−250 ml</string>
+    <string name="text_2_entries_needed" formatted="false">2 entries needed</string>
+    <string name="text_30_sec" formatted="false">+30 sec</string>
+    <string name="text_3_min_rest_water_breaks_included" formatted="false">3 min rest · water breaks included</string>
+    <string name="text_4_weeks" formatted="false">4 weeks</string>
+    <string name="text_500_ml" formatted="false">+500 ml</string>
+    <string name="text_size" formatted="false">Text size</string>
+    <string name="the_language_applies_immediately_across_the" formatted="false">The language applies immediately across the interface.</string>
+    <string name="theme" formatted="false">Theme</string>
+    <string name="these_values_are_used_only_for_personalizati" formatted="false">These values are used only for personalization and progress tracking.</string>
+    <string name="thigh" formatted="false">Thigh</string>
+    <string name="thigh_cm" formatted="false">Thigh, cm</string>
+    <string name="this_entry_will_be_removed_from_history_and" formatted="false">This entry will be removed from history and charts.</string>
+    <string name="this_helps_choose_exercises_for_the_equipmen" formatted="false">This helps choose exercises for the equipment you have.</string>
+    <string name="this_workout_will_be_removed_from_history" formatted="false">This workout will be removed from history.</string>
+    <string name="time_to_move" formatted="false">Time to move</string>
+    <string name="time_to_update_measurements" formatted="false">Time to update measurements</string>
+    <string name="time_to_update_progress" formatted="false">Time to update progress</string>
+    <string name="today" formatted="false">TODAY</string>
+    <string name="today_8dd7bf1" formatted="false">Today</string>
+    <string name="today_protein_calories_and_water" formatted="false">Today · protein, calories and water</string>
+    <string name="today_protein_calories_and_water_21f9076" formatted="false">Today • protein, calories and water</string>
+    <string name="today_s_entries" formatted="false">Today\'s entries</string>
+    <string name="today_s_protein" formatted="false">Today\'s protein</string>
+    <string name="track_measurements_personal_records_and_work" formatted="false">Track measurements, personal records and workout history.</string>
+    <string name="track_protein_calories_and_water_throughout" formatted="false">Track protein, calories and water throughout the day.</string>
+    <string name="tracks" formatted="false">Tracks</string>
+    <string name="training" formatted="false">TRAINING</string>
+    <string name="training_experience" formatted="false">Training experience</string>
+    <string name="training_load" formatted="false">Training load</string>
+    <string name="training_progress_results" formatted="false">Training. Progress. Results.</string>
+    <string name="typical_day" formatted="false">Typical day</string>
+    <string name="unit" formatted="false">Unit</string>
+    <string name="unknown_album" formatted="false">Unknown album</string>
+    <string name="unknown_artist" formatted="false">Unknown artist</string>
+    <string name="update" formatted="false">Update</string>
+    <string name="update_progress" formatted="false">Update progress</string>
+    <string name="update_weight_height_and_if_you_want_muscle" formatted="false">Update weight, height and, if you want, muscle measurements.</string>
+    <string name="updating_statistics" formatted="false">Updating statistics…</string>
+    <string name="upper_body" formatted="false">Upper body</string>
+    <string name="upper_lower" formatted="false">Upper / Lower</string>
+    <string name="use_system_setting" formatted="false">Use system setting</string>
+    <string name="value_label" formatted="false">Value</string>
+    <string name="very_active" formatted="false">Very active</string>
+    <string name="waist" formatted="false">Waist</string>
+    <string name="waist_0e51ebf" formatted="false">waist</string>
+    <string name="waist_cm" formatted="false">Waist, cm</string>
+    <string name="water" formatted="false">Water</string>
+    <string name="water_ml" formatted="false">Water, ml</string>
+    <string name="water_ml_day" formatted="false">Water, ml/day</string>
+    <string name="week" formatted="false">Week</string>
+    <string name="weight" formatted="false">Weight</string>
+    <string name="weight_height_and_body_measurements" formatted="false">Weight, height and body measurements</string>
+    <string name="weight_kg" formatted="false">Weight, kg</string>
+    <string name="what_equipment_do_you_have" formatted="false">What equipment do you have?</string>
+    <string name="what_should_we_call_you" formatted="false">What should we call you?</string>
+    <string name="what_you_ate" formatted="false">What you ate</string>
+    <string name="when_do_you_want_to_train" formatted="false">When do you want to train?</string>
+    <string name="where_do_you_train" formatted="false">Where do you train?</string>
+    <string name="workout_complete" formatted="false">Workout complete</string>
+    <string name="workout_history" formatted="false">Workout history</string>
+    <string name="workout_plan" formatted="false">Workout plan</string>
+    <string name="workout_recovery" formatted="false">Workout recovery</string>
+    <string name="workout_today" formatted="false">Workout today</string>
+    <string name="workouts" formatted="false">Workouts</string>
+    <string name="workouts_by_day" formatted="false">Workouts by day</string>
+    <string name="yesterday_s_protein" formatted="false">Yesterday\'s protein</string>
+    <string name="yoga_style_mobility" formatted="false">Yoga-style mobility</string>
+    <string name="you_can_add_muscle_measurements_later" formatted="false">You can add muscle measurements later.</string>
+    <string name="your_latest_measurements_were_added_a_while" formatted="false">Your latest measurements were added a while ago.</string>
+    <string name="your_local_library" formatted="false">Your local library</string>
+    <string name="your_name_is_used_in_your_profile_home_scree" formatted="false">Your name is used in your profile, Home screen and motivational notifications.</string>
+    <string name="feedback_body">GymFlow version: %1$s
+
+Describe your idea, bug or suggestion:
+</string>
+    <string name="birth_date_dot">Date of birth · %1$s</string>
+    <string name="birth_date_colon">Date of birth: %1$s</string>
+    <string name="exercise_progress_count">%1$d / %2$d exercises</string>
+    <string name="stages_minutes">%1$d stages • ~%2$d min</string>
+    <string name="rest_between_sets_minutes">Rest between sets: %1$d min</string>
+    <string name="sets_count">%1$d sets</string>
+    <string name="set_of">Set %1$d of %2$d</string>
+    <string name="seconds_count">%1$s seconds</string>
+    <string name="reps_count">%1$s reps</string>
+    <string name="queue_count">Queue · %1$d</string>
+    <string name="file_access_lost">GymFlow can no longer open “%1$s”. Select the music file again to restore access.</string>
+    <string name="artist_info">Artist: %1$s</string>
+    <string name="album_info">Album: %1$s</string>
+    <string name="duration_info">Duration: %1$s</string>
+    <string name="tracks_count">%1$d tracks</string>
+    <string name="protein_reminder_text">%1$sa %2$s target is about %3$d g of protein.</string>
+    <string name="workout_today_named">%1$stoday is a training day. All that\'s left is to start.</string>
+    <string name="recovery_text">Check your post-workout nutrition. Protein target: %1$d g/day.</string>
+    <string name="migrated_previous_version">Migrated from previous version</string>
+    <string-array name="motivation_messages">
+        <item>%1$stoday is a training day. All that’s left is to start.</item>
+        <item>You do not need a record today. You need a workout.</item>
+        <item>One more workout is one more step toward your goal.</item>
+        <item>The first set matters most. After it, you are already training.</item>
+        <item>Start with the warm-up. The rest gets easier.</item>
+        <item>Strength is built with repetitions, not plans.</item>
+        <item>You do not have to be stronger than everyone. Be stronger than your last workout.</item>
+        <item>Open the workout. Take the rest one set at a time.</item>
+        <item>Your last record is already saved. One day you will have to beat it.</item>
+        <item>Forty minutes today beats “I’ll definitely start tomorrow.”</item>
+        <item>Do not chase a perfect workout. Do today’s one.</item>
+        <item>Motivation comes and goes. Your schedule is still here.</item>
+        <item>%1$sGymFlow is ready. All that’s left is to start.</item>
+        <item>%1$syour goal will not move closer on its own. One set is already progress.</item>
+        <item>%1$syour goal is still here. Time for one more step toward it.</item>
+        <item>Yesterday’s result is a reference point. Today you can do a little more.</item>
+        <item>Do not feel like training? Start with the warm-up and decide after it.</item>
+        <item>One missed day changes little. Today does not have to be another one.</item>
+        <item>A workout does not have to be perfect. It has to happen.</item>
+        <item>While someone is postponing training, you can already finish your first set.</item>
+        <item>%1$swhile others chase big numbers, you can take the first step toward yours.</item>
+        <item>A new record starts with the first set, not the last one.</item>
+        <item>Tired before training? Start easy. You can choose the pace as you go.</item>
+        <item>Do not compare today’s first set with someone else’s tenth year of training.</item>
+        <item>The goal is written down. Now it needs one more day of work.</item>
+        <item>You do not have to be the best today. Just show up and do your work.</item>
+        <item>Progress likes consistency more than rare perfect workouts.</item>
+        <item>%1$sone completed set is worth more than ten thoughts about training.</item>
+        <item>You can postpone forever. The first set only takes a few minutes.</item>
+        <item>Finish the workout and you may thank yourself before the day is over.</item>
+    </string-array>
+    <string name="language_russian">Russian</string>
+    <string name="language_english">English</string>
+    <string name="text_scale_preview">A</string>
+    <string name="telegram_official">GymFlow</string>
+    <string name="support_email">Fl2011you@gmail.com</string>
+    <string name="app_version_display">GymFlow 1.0</string>
+    <string name="plus_250_ml">+250 ml</string>
+    <string name="plus_500_ml">+500 ml</string>
+    <string name="protein_amount">%1$s g</string>
+    <string name="protein_amount_named">%1$s g protein</string>
+    <string name="calorie_amount">%1$d kcal</string>
+    <string name="water_amount">%1$d ml</string>
+    <string name="water_amount_named">%1$d ml water</string>
+    <string name="auto_target_summary">Estimate: %1$s · %2$s</string>
+    <string name="add_weight_height_measurements">add weight and height in Measurements</string>
+    <string name="add_weight_measurements">add weight in Measurements</string>
+    <string-array name="weekdays_short">
+        <item>MON</item>
+        <item>TUE</item>
+        <item>WED</item>
+        <item>THU</item>
+        <item>FRI</item>
+        <item>SAT</item>
+        <item>SUN</item>
+    </string-array>
+    <string-array name="weekdays_full">
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+        <item>Sunday</item>
+    </string-array>
+    <string-array name="months_date">
+        <item>January</item>
+        <item>February</item>
+        <item>March</item>
+        <item>April</item>
+        <item>May</item>
+        <item>June</item>
+        <item>July</item>
+        <item>August</item>
+        <item>September</item>
+        <item>October</item>
+        <item>November</item>
+        <item>December</item>
+    </string-array>
+    <string name="play_pause">Play / pause</string>
+    <string name="move_up">Move up</string>
+    <string name="move_down">Move down</string>
+    <string name="remove">Remove</string>
+    <string name="open_profile">Open profile</string>
+    <string name="steps_duration_label">%1$d steps · %2$s</string>
+    <string name="date_sets_label">%1$s · %2$d sets</string>
+    <string name="value_with_unit">%1$s %2$s</string>
+    <string name="age_years">%1$d y</string>
+    <string name="sets_short_count">%1$d sets</string>
+    <string name="date_day_month">%1$d %2$s</string>
+    <string name="date_month_day">%1$s %2$d</string>
+    <string name="minutes_short">%1$d min</string>
+    <string name="upper_arm_short">arm</string>
+    <string name="forearm_short">forearm</string>
+    <string name="chest_short">chest</string>
+    <string name="thigh_short">thigh</string>
+    <string name="calf_short">calf</string>
+    <string name="delta_value_unit">%1$s%2$s %3$s</string>
+    <string-array name="home_motivation_messages">
+        <item>%1$stoday is a training day. All that’s left is to start.</item>
+        <item>You do not need a record today. You need a workout.</item>
+        <item>One more workout is one more step toward your goal.</item>
+        <item>The first set matters most. After it, you are already training.</item>
+        <item>Start with the warm-up. The rest gets easier.</item>
+        <item>Strength is built with repetitions, not plans.</item>
+        <item>You do not have to be stronger than everyone. Be stronger than your last workout.</item>
+        <item>Open the workout. Take the rest one set at a time.</item>
+        <item>Your last record is already saved. One day you will have to beat it.</item>
+        <item>Forty minutes today beats “I’ll definitely start tomorrow.”</item>
+        <item>Do not chase a perfect workout. Do today’s one.</item>
+        <item>Motivation comes and goes. Your schedule is still here.</item>
+        <item>%1$sGymFlow is ready. All that’s left is to start.</item>
+        <item>%1$syour goal will not move closer on its own. One set is already progress.</item>
+        <item>%1$syour goal is still here. Time for one more step toward it.</item>
+        <item>Yesterday’s result is a reference point. Today you can do a little more.</item>
+        <item>Do not feel like training? Start with the warm-up and decide after it.</item>
+        <item>One missed day changes little. Today does not have to be another one.</item>
+        <item>A workout does not have to be perfect. It has to happen.</item>
+        <item>While someone is postponing training, you can already finish your first set.</item>
+        <item>%1$swhile others chase big numbers, you can take the first step toward yours.</item>
+        <item>A new record starts with the first set, not the last one.</item>
+        <item>Tired before training? Start easy. You can choose the pace as you go.</item>
+        <item>Do not compare today’s first set with someone else’s tenth year of training.</item>
+        <item>The goal is written down. Now it needs one more day of work.</item>
+        <item>You do not have to be the best today. Just show up and do your work.</item>
+        <item>Progress likes consistency more than rare perfect workouts.</item>
+        <item>%1$sone completed set is worth more than ten thoughts about training.</item>
+        <item>You can postpone forever. The first set only takes a few minutes.</item>
+        <item>Finish the workout and you may thank yourself before the day is over.</item>
+    </string-array>
+    <string name="duration_hours_plus">%1$d h+</string>
+    <string name="duration_hours_minutes_plus">%1$d h %2$d min+</string>
+    <string name="muscle_hamstrings">Hamstrings</string>
+    <string name="muscle_quads">Quads</string>
+    <string name="muscle_glutes">Glutes</string>
+    <string name="muscle_hips">Hips</string>
+    <string name="muscle_calves">Calves</string>
+    <string name="muscle_core">Core</string>
+    <string name="muscle_triceps">Triceps</string>
+    <string name="muscle_chest">Chest</string>
+    <string name="muscle_back">Back</string>
+    <string name="muscle_shoulders">Shoulders</string>
+    <string name="muscle_forearms">Forearms</string>
+    <string name="muscle_biceps">Biceps</string>
+    <string name="pause">Pause</string>
+    <string name="reps_unit">reps</string>
+    <string name="sec_unit">sec</string>
+    <string name="add_one_more_measurement_for_a_chart">Add one more measurement to build a chart.</string>
+    <string name="unsupported_gymflow_backup_file">Unsupported GymFlow backup file</string>
+    <string name="unsupported_backup_version">Unsupported backup version</string>
+    <string name="backup_profile_missing">The backup does not contain a profile</string>
+    <string name="tell_us_about_yourself">Tell us about yourself</string>
+    <string name="birth_date">Date of birth</string>
+    <string name="select_birth_date">Select date of birth</string>
+    <string name="month">month</string>
+    <string name="year">year</string>
+    <string name="select_height">Select height</string>
+    <string name="select_weight">Select weight</string>
+    <string name="body_data_subtitle">Date of birth, sex, height and weight are used only for personalization.</string>
+    <string name="height_value">%1$d cm</string>
+    <string name="weight_value">%1$d kg</string>
+    <string-array name="months_wheel">
+        <item>January</item>
+        <item>February</item>
+        <item>March</item>
+        <item>April</item>
+        <item>May</item>
+        <item>June</item>
+        <item>July</item>
+        <item>August</item>
+        <item>September</item>
+        <item>October</item>
+        <item>November</item>
+        <item>December</item>
+    </string-array>
+    <string name="birth_date_display">%2$s %1$d, %3$d</string>
+
+    <string name="get_started">Get started</string>
+    <string name="already_used_gymflow">Already used GymFlow?</string>
+    <string name="intro_headline">Your workout — from the first set to a new record.</string>
+    <string name="intro_why_title">Everything that matters for progress, in one place</string>
+    <string name="intro_summary">Set up GymFlow once: choose where and when you train, your goals and available equipment. From there, the app helps you manage your program, sets and rest, nutrition, measurements, records and history without unnecessary clutter.</string>
+    <string name="intro_training_title">Training built around you</string>
+    <string name="intro_training_text">Gym or home, dumbbells or a pull-up bar — GymFlow uses your setup, selected days and program. Exercises can be configured by day, replaced and reordered.</string>
+    <string name="intro_workout_title">What you need during a workout</string>
+    <string name="intro_workout_text">Technique, target muscles, common mistakes and the current set stay in view. Finish a set with a swipe, rest on the timer and move forward one step at a time.</string>
+    <string name="intro_set_preview">Set 2 of 4 • 60 kg × 10</string>
+    <string name="intro_progress_title">Progress, goals and records</string>
+    <string name="intro_progress_text">Save body measurements, workout history and personal records. Create your own goals and review muscle load across recent weeks.</string>
+    <string name="intro_nutrition_title">Nutrition without complicated tables</string>
+    <string name="intro_nutrition_text">Set daily targets for protein, calories and water. Quick controls make logging easy through the day, while progress shows how much remains.</string>
+    <string name="intro_music_title">Your music during training</string>
+    <string name="intro_music_text">Import tracks from your device and control playback with the Mini Player, queue, seek, shuffle and repeat. Music can continue while you move into a workout.</string>
+    <string name="intro_reminders_title">Reminders you can control</string>
+    <string name="intro_reminders_text">GymFlow can remind you about training, protein and new measurements, and occasionally show a short motivation message. Each notification type can be disabled separately.</string>
+    <string name="intro_data_title">Take your data with you</string>
+    <string name="intro_data_text">Your profile, program, nutrition, measurements, goals, records, history and settings are stored locally and can be moved using Import / Export backups.</string>
+    <string name="intro_local_storage_badge">Local data</string>
+    <string name="intro_personalize_title">Make the interface yours</string>
+    <string name="intro_personalize_text">Russian and English, light, dark or system theme, multiple color palettes and adjustable text size let you tune GymFlow for everyday use.</string>
+    <string name="intro_ready_title">Ready to start?</string>
+    <string name="intro_ready_text">Answer a few questions and GymFlow will prepare a schedule and program around your choices. You can change everything later.</string>
+    <string name="mini_player">Mini Player</string>
+    <string name="telegram">Telegram</string>
+    <string name="telegram_gymflow">GymFlow</string>
+    <string name="terms_full_text">GymFlow helps you track workouts, nutrition, measurements, goals and progress history. You choose your own training loads, exercises and daily targets and are responsible for making sure they are appropriate for your condition and experience. GymFlow is not a medical service and is not intended to diagnose or treat medical conditions. If an exercise causes pain, dizziness or significant discomfort, stop and seek professional guidance when appropriate. By using the app, you agree to use its features responsibly and in accordance with the laws that apply to you.</string>
+    <string name="privacy_full_text">Core GymFlow data is stored locally on your device. This may include your profile, date of birth, body measurements, workout schedule and history, nutrition, goals, records, settings and links to music files you selected. GymFlow does not upload this data to its own cloud service. Backups are exported only when you request them. Audio files are not embedded in the JSON backup. You can remove GymFlow data with Reset in Settings; original music files on your device are not deleted.</string>
+
+</resources>
