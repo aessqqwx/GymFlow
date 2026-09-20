@@ -14,10 +14,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # -------------------------------------------------
-      # 1. Распаковываем исходники GymFlow
-      # -------------------------------------------------
-
       - name: Unpack GymFlow source
         shell: bash
         run: |
@@ -40,10 +36,6 @@ jobs:
 
           echo "GymFlow source unpacked successfully"
 
-      # -------------------------------------------------
-      # 2. Сохраняем распакованные файлы обратно в GitHub
-      # -------------------------------------------------
-
       - name: Commit unpacked source
         shell: bash
         run: |
@@ -59,20 +51,12 @@ jobs:
             git push
           fi
 
-      # -------------------------------------------------
-      # 3. Java
-      # -------------------------------------------------
-
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
           cache: gradle
-
-      # -------------------------------------------------
-      # 4. Android SDK
-      # -------------------------------------------------
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -82,7 +66,6 @@ jobs:
         run: |
           yes | sdkmanager --licenses >/dev/null || true
 
-      # У GymFlow compileSdk = 37
       - name: Install Android SDK packages
         shell: bash
         run: |
@@ -91,19 +74,11 @@ jobs:
             "platforms;android-37" \
             "build-tools;36.0.0"
 
-      # -------------------------------------------------
-      # 5. Проверяем Wrapper
-      # -------------------------------------------------
-
       - name: Check Gradle Wrapper
         shell: bash
         run: |
           chmod +x gradlew
           ./gradlew --version
-
-      # -------------------------------------------------
-      # 6. Настоящая Android-сборка
-      # -------------------------------------------------
 
       - name: Build GymFlow Debug APK
         shell: bash
@@ -111,10 +86,6 @@ jobs:
           ./gradlew :app:assembleDebug \
             --stacktrace \
             --no-daemon
-
-      # -------------------------------------------------
-      # 7. Переименовываем APK
-      # -------------------------------------------------
 
       - name: Prepare APK
         shell: bash
@@ -135,10 +106,6 @@ jobs:
 
           echo "APK:"
           ls -lh dist/
-
-      # -------------------------------------------------
-      # 8. APK появляется в GitHub Actions
-      # -------------------------------------------------
 
       - name: Upload GymFlow APK
         uses: actions/upload-artifact@v4
