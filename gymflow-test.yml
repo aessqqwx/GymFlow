@@ -1,0 +1,15 @@
+name: GymFlow Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test GitHub Actions
+        run: echo "GymFlow Actions works!"
