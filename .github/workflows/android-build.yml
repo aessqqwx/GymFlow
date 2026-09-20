@@ -38,8 +38,8 @@ jobs:
 
           sdkmanager --channel=3 --install \
             "platform-tools" \
-            "platforms;android-37" \
-            "build-tools;37.0.0"
+            "platforms;android-36" \
+            "build-tools;36.0.0"
 
       - name: Make Gradle executable
         run: chmod +x gradlew
