@@ -9,10 +9,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: gymflow-android-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   build:
     name: Build Android APK
@@ -20,7 +16,7 @@ jobs:
     timeout-minutes: 45
 
     steps:
-      - name: Checkout GymFlow
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Java 17
@@ -31,37 +27,33 @@ jobs:
           cache: gradle
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Accept Android licenses
-        shell: bash
-        run: |
-          yes | sdkmanager --licenses >/dev/null || true
+        uses: android-actions/setup-android@v4
+        with:
+          packages: ""
 
       - name: Install Android SDK packages
         shell: bash
         run: |
-          sdkmanager \
+          yes | sdkmanager --licenses >/dev/null || true
+
+          sdkmanager --install \
             "platform-tools" \
             "platforms;android-37" \
             "build-tools;36.0.0"
 
-      - name: Make Gradle Wrapper executable
-        shell: bash
+      - name: Make Gradle executable
         run: chmod +x gradlew
 
-      - name: Check Gradle Wrapper
-        shell: bash
+      - name: Check Gradle
         run: ./gradlew --version
 
       - name: Build GymFlow Debug APK
-        shell: bash
         run: |
           ./gradlew :app:assembleDebug \
             --stacktrace \
             --no-daemon
 
-      - name: Find and prepare APK
+      - name: Prepare APK
         shell: bash
         run: |
           mkdir -p dist
@@ -69,32 +61,20 @@ jobs:
           APK=$(find app/build/outputs/apk/debug -type f -name "*.apk" | head -n 1)
 
           if [ -z "$APK" ]; then
-            echo "ERROR: APK was not created"
-            find app/build/outputs -type f 2>/dev/null || true
+            echo "APK was not created"
             exit 1
           fi
 
-          echo "APK found: $APK"
-
           cp "$APK" dist/GymFlow-1.0-debug.apk
+          sha256sum dist/GymFlow-1.0-debug.apk > dist/GymFlow-1.0-debug.apk.sha256
 
-          sha256sum dist/GymFlow-1.0-debug.apk \
-            > dist/GymFlow-1.0-debug.apk.sha256
+          ls -lh dist
 
-          echo
-          echo "=== APK INFO ==="
-          ls -lh dist/GymFlow-1.0-debug.apk
-
-          echo
-          echo "=== SHA-256 ==="
-          cat dist/GymFlow-1.0-debug.apk.sha256
-
-      - name: Upload GymFlow APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: GymFlow-1.0-debug
           path: |
             dist/GymFlow-1.0-debug.apk
             dist/GymFlow-1.0-debug.apk.sha256
-          if-no-files-found: error
           retention-days: 30
