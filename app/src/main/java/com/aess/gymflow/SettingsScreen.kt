@@ -302,7 +302,7 @@ fun SettingsScreen(
                     Text(gs(language, R.string.color_scheme), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                     Spacer(Modifier.height(8.dp))
                     Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                        PaletteRow(profile.colorStyle == "MONO", gs(language, R.string.monochrome), gs(language, R.string.default), listOf(Color(0xFFF0F0F0), Color(0xFF8B8B8B), Color(0xFF2B2B2B))) {
+                        PaletteRow(profile.colorStyle == "MONO", gs(language, R.string.monochrome), gs(language, R.string.default_label), listOf(Color(0xFFF0F0F0), Color(0xFF8B8B8B), Color(0xFF2B2B2B))) {
                             onProfileChange(profile.copy(colorStyle = "MONO"))
                         }
                         PaletteRow(profile.colorStyle == "SYSTEM", gs(language, R.string.system), gs(language, R.string.device_accent_with_gymflow_neutral_surfaces), listOf(Color(0xFF9CB9DD), Color(0xFF8EA69A), Color(0xFFB5A28E))) {

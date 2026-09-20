@@ -98,7 +98,7 @@
     <string name="data_section" formatted="false">Data</string>
     <string name="date_of_birth_height_and_weight_help_gymflow" formatted="false">Date of birth, height and weight help GymFlow show your progress more accurately.</string>
     <string name="day" formatted="false">day</string>
-    <string name="default" formatted="false">Default</string>
+    <string name="default_label" formatted="false">Default</string>
     <string name="delete" formatted="false">Delete</string>
     <string name="delete_all_gymflow_data" formatted="false">Delete all GymFlow data?</string>
     <string name="delete_measurement" formatted="false">Delete measurement?</string>

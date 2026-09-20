@@ -98,7 +98,7 @@
     <string name="data_section" formatted="false">Данные</string>
     <string name="date_of_birth_height_and_weight_help_gymflow" formatted="false">Дата рождения, рост и вес помогают GymFlow точнее показывать вашу динамику.</string>
     <string name="day" formatted="false">день</string>
-    <string name="default" formatted="false">По умолчанию</string>
+    <string name="default_label" formatted="false">По умолчанию</string>
     <string name="delete" formatted="false">Удалить</string>
     <string name="delete_all_gymflow_data" formatted="false">Удалить все данные GymFlow?</string>
     <string name="delete_measurement" formatted="false">Удалить измерение?</string>
