@@ -1,0 +1,347 @@
+package com.aess.gymflow
+
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.LibraryMusic
+import androidx.compose.material.icons.rounded.Restaurant
+import androidx.compose.material.icons.rounded.Straighten
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+private data class RootLists(
+    val progress: List<ProgressEntry>,
+    val logs: List<WorkoutLog>,
+    val nutrition: List<NutritionEntry>,
+    val goals: List<GoalEntry>,
+    val records: List<PersonalRecord>
+)
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent { GymFlowRoot() }
+    }
+}
+
+@Composable
+private fun GymFlowRoot() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val store = remember { GymFlowStore(context) }
+    val scope = rememberCoroutineScope()
+    val initialProfile = remember { store.loadProfile() }
+    remember(initialProfile) {
+        store.loadCachedWorkoutPlan(initialProfile)?.also { primeWorkoutPlanCache(initialProfile, it) }
+    }
+
+    var profile by remember { mutableStateOf(initialProfile) }
+    var progress by remember { mutableStateOf<List<ProgressEntry>>(emptyList()) }
+    var logs by remember { mutableStateOf<List<WorkoutLog>>(emptyList()) }
+    var nutrition by remember { mutableStateOf<List<NutritionEntry>>(emptyList()) }
+    var goals by remember { mutableStateOf<List<GoalEntry>>(emptyList()) }
+    var records by remember { mutableStateOf<List<PersonalRecord>>(emptyList()) }
+    var templates by remember { mutableStateOf(store.loadTemplates()) }
+    var dataReady by remember { mutableStateOf(false) }
+    var mutationEpoch by remember { mutableIntStateOf(0) }
+    var activeState by remember { mutableStateOf(store.loadActiveWorkout()) }
+    var activeWorkout by remember {
+        mutableStateOf(activeState?.let { state -> resolveActiveWorkoutDay(state, workoutsFor(profile)) })
+    }
+    var showSettings by rememberSaveable { mutableStateOf(false) }
+    var showProfile by rememberSaveable { mutableStateOf(false) }
+    var tab by rememberSaveable { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        val epoch = mutationEpoch
+        val loaded = withContext(Dispatchers.IO) {
+            RootLists(
+                progress = store.loadProgress(),
+                logs = store.loadWorkoutLogs(),
+                nutrition = store.loadNutrition(),
+                goals = store.loadGoals(),
+                records = store.loadRecords()
+            )
+        }
+        if (mutationEpoch == epoch) {
+            progress = loaded.progress
+            logs = loaded.logs
+            nutrition = loaded.nutrition
+            goals = loaded.goals
+            records = loaded.records
+        }
+        dataReady = true
+    }
+
+    BackHandler(enabled = activeWorkout != null || showSettings || showProfile) {
+        when {
+            activeWorkout != null -> activeWorkout = null
+            showSettings -> showSettings = false
+            showProfile -> showProfile = false
+        }
+    }
+
+    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    fun updateProfile(updated: UserProfile) {
+        val notificationsJustEnabled = !profile.notificationsEnabled && updated.notificationsEnabled
+        val enablingMonthly = (!profile.monthlyCheckInEnabled || !profile.measurementNotifications) && updated.monthlyCheckInEnabled && updated.measurementNotifications
+        val normalized = if (updated.onboardingCompleted && updated.monthlyCheckInEnabled && updated.nextMonthlyCheckInAt <= 0L) updated.copy(nextMonthlyCheckInAt = nextMonthlyCheckInAt()) else updated
+        val planChanged = workoutPlanSignature(profile) != workoutPlanSignature(normalized)
+        profile = normalized
+        store.saveProfile(normalized)
+        if (planChanged) {
+            invalidateWorkoutPlanCache()
+            scope.launch {
+                val plan = withContext(Dispatchers.Default) { workoutsFor(normalized) }
+                withContext(Dispatchers.IO) { store.saveCachedWorkoutPlan(normalized, plan) }
+            }
+        }
+        if (normalized.onboardingCompleted && normalized.notificationsEnabled && normalized.measurementNotifications && normalized.monthlyCheckInEnabled) {
+            ensureMonthlyCheckInScheduled(context, normalized)
+            if (enablingMonthly) requestNotificationPermissionIfNeeded()
+        } else cancelMonthlyCheckIn(context)
+        if (normalized.onboardingCompleted && normalized.notificationsEnabled) scheduleDailyGymFlowReminders(context) else cancelDailyGymFlowReminders(context)
+        if (notificationsJustEnabled) requestNotificationPermissionIfNeeded()
+        if (!normalized.notificationsEnabled || !normalized.proteinNotifications) cancelRecoveryReminder(context)
+    }
+
+    val photoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) scope.launch {
+            val stored = withContext(Dispatchers.IO) { persistAvatar(context, uri) }
+            if (stored.isNotBlank()) updateProfile(profile.copy(avatarUri = stored))
+        }
+    }
+
+    fun addProgressEntry(entry: ProgressEntry) {
+        progress = (listOf(entry) + progress).sortedByDescending { it.createdAt }
+        store.saveProgress(progress)
+        if (profile.onboardingCompleted && profile.monthlyCheckInEnabled) {
+            val refreshed = profile.copy(nextMonthlyCheckInAt = nextMonthlyCheckInAt())
+            profile = refreshed; store.saveProfile(refreshed); scheduleMonthlyCheckIn(context, refreshed.nextMonthlyCheckInAt)
+        }
+    }
+    fun addNutritionEntry(entry: NutritionEntry) { nutrition=(listOf(entry)+nutrition).sortedByDescending{it.createdAt};store.saveNutrition(nutrition) }
+    fun upsertGoal(entry:GoalEntry){goals=(listOf(entry)+goals.filterNot{it.id==entry.id}).sortedByDescending{it.createdAt};store.saveGoals(goals)}
+    fun upsertRecord(entry:PersonalRecord){records=(listOf(entry)+records.filterNot{it.id==entry.id}).sortedByDescending{it.updatedAt};store.saveRecords(records)}
+
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri != null) scope.launch {
+            val result = runCatching {
+                withContext(Dispatchers.IO) {
+                    val payload = store.exportJson().toByteArray(Charsets.UTF_8)
+                    context.contentResolver.openOutputStream(uri)?.use { it.write(payload) } ?: error("open")
+                }
+            }
+            Toast.makeText(
+                context,
+                if (result.isSuccess) gs(profile.appLanguage, R.string.gymflow_data_exported) else gs(profile.appLanguage, R.string.could_not_export_data),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            mutationEpoch++
+            scope.launch {
+                val result = runCatching {
+                    withContext(Dispatchers.IO) {
+                        val raw = context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } ?: error("open")
+                        store.importJson(raw)
+                    }
+                }
+                result.onSuccess { backup ->
+                    MusicService.suppressPersistenceForStateReplacement()
+                    context.stopService(Intent(context, MusicService::class.java))
+                    profile = backup.profile
+                    progress = backup.progress
+                    logs = backup.workouts
+                    nutrition = backup.nutrition
+                    goals = backup.goals
+                    records = backup.records
+                    templates = backup.templates
+                    activeState = backup.activeWorkout
+                    primeWorkoutPlanCache(profile, backup.trainingPlan)
+                    activeWorkout = activeState?.let { state -> resolveActiveWorkoutDay(state, backup.trainingPlan) }
+                    if (profile.notificationsEnabled && profile.measurementNotifications && profile.monthlyCheckInEnabled && profile.nextMonthlyCheckInAt > 0) ensureMonthlyCheckInScheduled(context, profile) else cancelMonthlyCheckIn(context)
+                    if (profile.notificationsEnabled) scheduleDailyGymFlowReminders(context) else cancelDailyGymFlowReminders(context)
+                    Toast.makeText(context, gs(profile.appLanguage, R.string.gymflow_data_restored), Toast.LENGTH_SHORT).show()
+                }.onFailure { error ->
+                    val message = (error as? IllegalArgumentException)?.message
+                        ?.takeIf { it.isNotBlank() }
+                        ?: gs(profile.appLanguage, R.string.could_not_import_this_file)
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(profile.onboardingCompleted,profile.notificationsEnabled,profile.proteinNotifications,profile.workoutNotifications,profile.motivationNotifications,profile.measurementNotifications,profile.monthlyCheckInEnabled,profile.nextMonthlyCheckInAt,profile.reminderHour,profile.reminderMinute) {
+        if(profile.onboardingCompleted&&profile.notificationsEnabled&&profile.measurementNotifications&&profile.monthlyCheckInEnabled&&profile.nextMonthlyCheckInAt>0)ensureMonthlyCheckInScheduled(context,profile) else cancelMonthlyCheckIn(context)
+        if(profile.onboardingCompleted&&profile.notificationsEnabled)scheduleDailyGymFlowReminders(context) else cancelDailyGymFlowReminders(context)
+    }
+
+    GymFlowTheme(profile.themeMode,profile.colorStyle,profile.appLanguage,profile.fontScale) {
+        Surface(Modifier.fillMaxSize(),color=MaterialTheme.colorScheme.background) {
+            val rootScreen=when {
+                !dataReady -> "loading"
+                !profile.onboardingCompleted -> "onboarding"
+                activeWorkout!=null -> "workout:${activeWorkout?.key}"
+                showSettings -> "settings"
+                showProfile -> "profile"
+                else -> "main"
+            }
+            AnimatedContent(targetState=rootScreen,transitionSpec={if(initialState=="loading" || targetState=="loading" || initialState=="onboarding" || targetState=="onboarding") effectsMotion() else directionalMotion(targetState!="main")},label="root_transition") { screen ->
+                when {
+                    screen=="loading" -> Box(Modifier.fillMaxSize(), contentAlignment=Alignment.Center) { GymFlowMorphingShape(Modifier.size(96.dp)) }
+                    screen=="onboarding" -> OnboardingV2(initial=profile,onImport={importLauncher.launch(arrayOf("application/json","text/plain","*/*"))}) { updated,weight,height,plan ->
+                        mutationEpoch++
+                        val now = System.currentTimeMillis()
+                        val entry = ProgressEntry(now, now, weight, height, gs(updated.appLanguage, R.string.starting_data))
+                        val persistedProgress = withContext(Dispatchers.IO) {
+                            store.saveProfile(updated)
+                            store.saveCachedWorkoutPlan(updated, plan)
+                            val merged = (listOf(entry) + store.loadProgress().filterNot { it.id == entry.id }).sortedByDescending { it.createdAt }
+                            store.saveProgress(merged)
+                            merged
+                        }
+                        profile = updated
+                        progress = persistedProgress
+                        primeWorkoutPlanCache(updated, plan)
+                        requestNotificationPermissionIfNeeded()
+                        scheduleDailyGymFlowReminders(context)
+                    }
+                    screen.startsWith("workout:") -> {
+                        val day=activeWorkout?.takeIf { it.key==screen.substringAfter("workout:") }?:activeState?.takeIf { it.dayKey==screen.substringAfter("workout:") }?.let { resolveActiveWorkoutDay(it, workoutsFor(profile)) }?:workoutsFor(profile).firstOrNull{it.key==screen.substringAfter("workout:")}?:workoutByKey(screen.substringAfter("workout:"))
+                        if(day!=null) WorkoutScreen(day=day,storedState=activeState?.takeIf{it.dayKey==day.key},onStateChanged={activeState=it;store.saveActiveWorkout(it)},onBack={activeWorkout=null},priorLogs=logs,currentRecords=records,onFinished={log,setStage->
+                            mutationEpoch++
+                            setStage(0)
+                            val persistedLogs = withContext(Dispatchers.IO) { store.loadWorkoutLogs() }
+                            val updatedLogs = withContext(Dispatchers.Default) { mergeCompletedWorkout(persistedLogs, log) }
+                            withContext(Dispatchers.IO) { store.saveWorkoutLogs(updatedLogs) }
+                            logs = updatedLogs
+                            setStage(1)
+                            val persistedRecords = withContext(Dispatchers.IO) { store.loadRecords() }
+                            val updatedRecords = withContext(Dispatchers.Default) { updatedRecordsAfterWorkout(persistedRecords, day, log, profile.appLanguage) }
+                            setStage(2)
+                            withContext(Dispatchers.IO) { store.saveRecords(updatedRecords) }
+                            records = updatedRecords
+                            setStage(3)
+                            withContext(Dispatchers.Default) { computeMuscleLoadCounts(updatedLogs, profile, profile.appLanguage) }
+                            setStage(4)
+                            val preparedPlan = withContext(Dispatchers.Default) { workoutsFor(profile) }
+                            withContext(Dispatchers.IO) { store.saveCachedWorkoutPlan(profile, preparedPlan) }
+                            if(profile.notificationsEnabled&&profile.reminderEnabled&&profile.proteinNotifications){requestNotificationPermissionIfNeeded();scheduleRecoveryReminder(context)}
+                        },onHome={activeState=null;store.saveActiveWorkout(null);activeWorkout=null;tab=0},onMoodRated={id,rating->
+                            val updated=logs.map{if(it.id==id)it.copy(moodRating=rating) else it}
+                            logs=updated
+                            scope.launch(Dispatchers.IO){store.saveWorkoutLogs(updated)}
+                        })
+                    }
+                    screen=="settings" -> SettingsScreen(profile=profile,onProfileChange=::updateProfile,onBack={showSettings=false},onExport={exportLauncher.launch("GymFlow-backup.json")},onImport={importLauncher.launch(arrayOf("application/json","text/plain","*/*"))},onReset={
+                        mutationEpoch++
+                        MusicService.suppressPersistenceForReset();context.stopService(Intent(context,MusicService::class.java))
+                        scope.launch {
+                            withContext(Dispatchers.IO) { store.resetAll() }
+                            invalidateWorkoutPlanCache();profile=UserProfile();progress=emptyList();logs=emptyList();nutrition=emptyList();goals=emptyList();records=emptyList();templates=emptyList();activeState=null;activeWorkout=null;showSettings=false;showProfile=false
+                            cancelDailyGymFlowReminders(context);cancelMonthlyCheckIn(context);cancelRecoveryReminder(context)
+                        }
+                    })
+                    screen=="profile" -> ProfileScreen(profile=profile,onProfileChange=::updateProfile,onPickPhoto={photoLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))},onOpenSettings={showProfile=false;showSettings=true},onBack={showProfile=false},logs=logs,records=records,progress=progress)
+                    else -> MainTabs(
+                        profile=profile,tab=tab,onTab={tab=it},activeState=activeState,logs=logs,nutrition=nutrition,progress=progress,goals=goals,records=records,
+                        templates=templates,
+                        onTemplatesChange={ updated -> templates=updated; store.saveTemplates(updated) },
+                        onOpenSettings={showSettings=true},onOpenProfile={showProfile=true},onOpenWorkout={activeWorkout=it},onAddNutrition=::addNutritionEntry,onOpenMeasurements={tab=1},
+                        onAddProgress=::addProgressEntry,onDeleteProgress={id->progress=progress.filterNot{it.id==id};store.saveProgress(progress)},onDeleteLog={id->logs=logs.filterNot{it.id==id};store.saveWorkoutLogs(logs)},
+                        onUpsertGoal=::upsertGoal,onDeleteGoal={id->goals=goals.filterNot{it.id==id};store.saveGoals(goals)},onUpsertRecord=::upsertRecord,onDeleteRecord={id->records=records.filterNot{it.id==id};store.saveRecords(records)},
+                        onSnooze={val p=profile.copy(nextMonthlyCheckInAt=System.currentTimeMillis()+MONTHLY_SNOOZE_MS);profile=p;store.saveProfile(p);scheduleMonthlyCheckIn(context,p.nextMonthlyCheckInAt)},onDeleteNutrition={id->nutrition=nutrition.filterNot{it.id==id};store.saveNutrition(nutrition)},onProfileChange=::updateProfile
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MainTabs(
+    profile:UserProfile,tab:Int,onTab:(Int)->Unit,activeState:ActiveWorkoutState?,logs:List<WorkoutLog>,nutrition:List<NutritionEntry>,progress:List<ProgressEntry>,goals:List<GoalEntry>,records:List<PersonalRecord>,
+    templates:List<WorkoutTemplate>,onTemplatesChange:(List<WorkoutTemplate>)->Unit,
+    onOpenSettings:()->Unit,onOpenProfile:()->Unit,onOpenWorkout:(WorkoutDay)->Unit,onAddNutrition:(NutritionEntry)->Unit,onOpenMeasurements:()->Unit,
+    onAddProgress:(ProgressEntry)->Unit,onDeleteProgress:(Long)->Unit,onDeleteLog:(Long)->Unit,onUpsertGoal:(GoalEntry)->Unit,onDeleteGoal:(Long)->Unit,onUpsertRecord:(PersonalRecord)->Unit,onDeleteRecord:(Long)->Unit,onSnooze:()->Unit,onDeleteNutrition:(Long)->Unit,onProfileChange:(UserProfile)->Unit
+) {
+    var showNowPlaying by remember { mutableStateOf(false) }
+    if(showNowPlaying) NowPlayingSheet { showNowPlaying=false }
+    Scaffold(containerColor=MaterialTheme.colorScheme.background,bottomBar={
+        Column(Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(Color.Transparent,MaterialTheme.colorScheme.background.copy(alpha=.82f),MaterialTheme.colorScheme.background))).navigationBarsPadding().padding(horizontal=18.dp,vertical=8.dp)) {
+            MiniPlayerBar(onOpen={showNowPlaying=true})
+            Spacer(Modifier.height(6.dp))
+            Surface(modifier=Modifier.align(Alignment.CenterHorizontally),color=MaterialTheme.colorScheme.surfaceVariant.copy(alpha=.96f),shape=RoundedCornerShape(38.dp),tonalElevation=3.dp) {
+                Row(Modifier.padding(horizontal=7.dp,vertical=7.dp),horizontalArrangement=Arrangement.spacedBy(6.dp),verticalAlignment=Alignment.CenterVertically) {
+                    val items=listOf(Triple(gs(profile.appLanguage, R.string.today_8dd7bf1),Icons.Rounded.Home,0),Triple(gs(profile.appLanguage, R.string.measurements),Icons.Rounded.Straighten,1),Triple(gs(profile.appLanguage, R.string.nutrition_294139b),Icons.Rounded.Restaurant,2),Triple(gs(profile.appLanguage, R.string.music_df4392a),Icons.Rounded.LibraryMusic,3))
+                    items.forEach { (label, icon, index) ->
+                        val isSelected = tab == index
+                        val container by animateColorAsState(
+                            if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                            GymGlowMotion.defaultEffects(), label = "nav_selection"
+                        )
+                        Surface(color = container, shape = RoundedCornerShape(24.dp)) {
+                            IconButton(onClick = { onTab(index) }, modifier = Modifier
+                                .size(width = 58.dp, height = 50.dp)
+                                .semantics { selected = isSelected }) {
+                                Icon(icon, label, Modifier.size(24.dp).then(if (index == 1) Modifier.rotate(-45f) else Modifier),
+                                    tint = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }) { innerPadding ->
+        Box(Modifier.fillMaxSize().padding(innerPadding)) {
+            AnimatedContent(targetState=tab,transitionSpec={directionalMotion(targetState>initialState, GymGlowMotion.TabTravelDivisor)},label="tab_transition") { current ->
+                when(current) {
+                    0 -> TodayScreen(activeState,logs,profile,nutrition,progress,goals,records,onOpenSettings,onOpenProfile,onOpenWorkout,onAddNutrition,onOpenMeasurements)
+                    1 -> ProgressScreen(progress,logs,profile,goals,records,onAddProgress,onDeleteProgress,onDeleteLog,onUpsertGoal,onDeleteGoal,onUpsertRecord,onDeleteRecord,onSnooze,onOpenWorkout=onOpenWorkout,templates=templates,onSaveTemplate={tm->val next=(listOf(tm)+templates.filterNot{it.id==tm.id}).sortedByDescending{it.createdAt};onTemplatesChange(next)},onDeleteTemplate={id->val next=templates.filterNot{it.id==id};onTemplatesChange(next)},onRenameTemplate={id,name->val next=templates.map{if(it.id==id)it.copy(name=name)else it};onTemplatesChange(next)})
+                    2 -> NutritionScreen(profile,progress,nutrition,onAddNutrition,onDeleteNutrition,onProfileChange)
+                    else -> PlayerScreen()
+                }
+            }
+        }
+    }
+}
