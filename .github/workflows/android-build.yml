@@ -1,0 +1,131 @@
+name: Build GymFlow APK
+
+on:
+  push:
+    branches: [main, 'fix/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Tests, lint and APK
+    permissions:
+      contents: write
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Expand source archive if present
+        run: |
+          if [ -f GymGlow-source.zip ]; then
+            unzip -o GymGlow-source.zip
+          fi
+      - name: Store expanded project in repository
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          if [ -f GymGlow-source.zip ]; then
+            rm GymGlow-source.zip
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -A
+            git commit -m 'Expand GymGlow 1.5 source project'
+            git push origin HEAD:main
+          fi
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+      - name: Install SDK 36
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Static resources
+        run: sh tools/final-checks/run.sh
+      - name: Core logic, Android compilation and lint
+        run: bash gradlew :logic-tests:run :app:assembleDebug :app:lintDebug --no-daemon --stacktrace
+      - name: Prepare APK
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk dist/GymGlow_v1.5.apk
+          cd dist
+          sha256sum GymGlow_v1.5.apk > GymGlow_v1.5.apk.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GymGlow_v1.5
+          path: dist/*
+          retention-days: 30
+          if-no-files-found: error
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-debug.*
+
+  smoke:
+    name: Android startup smoke test
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Expand source archive if present
+        run: |
+          if [ -f GymGlow-source.zip ]; then
+            unzip -o GymGlow-source.zip
+          fi
+      - uses: actions/download-artifact@v4
+        with:
+          name: GymGlow_v1.5
+          path: dist
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          disable-animations: false
+          script: bash tools/android-smoke/run.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-smoke-evidence
+          path: smoke-output/
+
+  release:
+    name: Publish tested APK
+    needs: [build, smoke]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Expand source archive if present
+        run: |
+          if [ -f GymGlow-source.zip ]; then
+            unzip -o GymGlow-source.zip
+          fi
+      - uses: actions/download-artifact@v4
+        with:
+          name: GymGlow_v1.5
+          path: dist
+      - name: Verify and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd dist
+          sha256sum -c GymGlow_v1.5.apk.sha256
+          cd ..
+          gh release create v1.5 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'GymFlow 1.5 — test APK' --notes-file docs/RELEASE_NOTES_1.5.md --prerelease dist/GymGlow_v1.5.apk dist/GymGlow_v1.5.apk.sha256
