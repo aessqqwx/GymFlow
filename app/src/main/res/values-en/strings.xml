@@ -601,7 +601,7 @@ Describe your idea, bug or suggestion:
         <item>Exhaling on the effort phase can help you keep control of your form.</item>
         <item>Stretching after a workout may help ease next-day muscle stiffness.</item>
         <item>A light walk on a rest day can aid recovery just as well as full rest.</item>
-        <item>Don't chase a weight increase every single week — progress is rarely linear.</item>
+        <item>Don\'t chase a weight increase every single week — progress is rarely linear.</item>
         <item>A cool-down at the end of a workout helps your heart rate ease back down gradually.</item>
     </string-array>
     <string name="duration_hours_plus">%1$d h+</string>
@@ -682,7 +682,7 @@ Describe your idea, bug or suggestion:
     <string name="terms_full_text">GymFlow helps you track workouts, nutrition, measurements, goals and progress history. You choose your own training loads, exercises and daily targets and are responsible for making sure they are appropriate for your condition and experience. GymFlow is not a medical service and is not intended to diagnose or treat medical conditions. If an exercise causes pain, dizziness or significant discomfort, stop and seek professional guidance when appropriate. By using the app, you agree to use its features responsibly and in accordance with the laws that apply to you.</string>
     <string name="privacy_full_text">Core GymFlow data is stored locally on your device. This may include your profile, date of birth, body measurements, workout schedule and history, nutrition, goals, records, settings and links to music files you selected. GymFlow does not upload this data to its own cloud service. Backups are exported only when you request them. Audio files are not embedded in the JSON backup. You can remove GymFlow data with Reset in Settings; original music files on your device are not deleted.</string>
 
-    <string name="intro_features_title" formatted="false">What's inside</string>
+    <string name="intro_features_title" formatted="false">What\'s inside</string>
     <string name="weekdays" formatted="false">Weekdays</string>
     <string name="weekend" formatted="false">Weekend</string>
     <string name="days_selected" formatted="false">Selected: %1$d</string>
