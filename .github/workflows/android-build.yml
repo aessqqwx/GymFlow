@@ -48,8 +48,8 @@ jobs:
         with:
           packages: platform-tools
           log-accepted-android-sdk-licenses: false
-      - name: Install SDK 36
-        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Install SDK 37
+        run: sdkmanager 'platforms;android-37' 'build-tools;36.0.0'
       - name: Static resources
         run: sh tools/final-checks/run.sh
       - name: Core logic, Android compilation and lint
