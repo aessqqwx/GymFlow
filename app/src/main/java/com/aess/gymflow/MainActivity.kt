@@ -79,7 +79,7 @@ private fun GymFlowRoot() {
     var mutationEpoch by remember { mutableIntStateOf(0) }
     var activeState by remember { mutableStateOf(store.loadActiveWorkout()) }
     var activeWorkout by remember {
-        mutableStateOf(activeState?.let { state -> workoutsFor(profile).firstOrNull { it.key == state.dayKey } ?: workoutByKey(state.dayKey) })
+        mutableStateOf(activeState?.let { state -> resolveActiveWorkoutDay(state, workoutsFor(profile)) })
     }
     var showSettings by rememberSaveable { mutableStateOf(false) }
     var showProfile by rememberSaveable { mutableStateOf(false) }
@@ -199,7 +199,7 @@ private fun GymFlowRoot() {
                     templates = backup.templates
                     activeState = backup.activeWorkout
                     primeWorkoutPlanCache(profile, backup.trainingPlan)
-                    activeWorkout = activeState?.let { state -> backup.trainingPlan.firstOrNull { it.key == state.dayKey } ?: workoutByKey(state.dayKey) }
+                    activeWorkout = activeState?.let { state -> resolveActiveWorkoutDay(state, backup.trainingPlan) }
                     if (profile.notificationsEnabled && profile.measurementNotifications && profile.monthlyCheckInEnabled && profile.nextMonthlyCheckInAt > 0) ensureMonthlyCheckInScheduled(context, profile) else cancelMonthlyCheckIn(context)
                     if (profile.notificationsEnabled) scheduleDailyGymFlowReminders(context) else cancelDailyGymFlowReminders(context)
                     Toast.makeText(context, gs(profile.appLanguage, R.string.gymflow_data_restored), Toast.LENGTH_SHORT).show()

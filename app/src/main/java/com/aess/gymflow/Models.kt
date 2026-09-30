@@ -102,7 +102,9 @@ data class ActiveWorkoutState(
     /** Remaining rest ms when [restState] is PAUSED. */
     val restRemainingMs: Long = 0L,
     /** Session notes keyed by exerciseId. */
-    val exerciseNotes: Map<String, String> = emptyMap()
+    val exerciseNotes: Map<String, String> = emptyMap(),
+    /** Saved plan for restoring the session after edits to the current program. */
+    val workoutDay: WorkoutDay? = null
 )
 
 data class UserProfile(

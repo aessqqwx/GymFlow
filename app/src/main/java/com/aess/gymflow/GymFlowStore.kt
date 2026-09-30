@@ -342,6 +342,7 @@ class GymFlowStore(private val context: Context) {
         put("completedSets", completedSetsToJson(s.completedSets)); put("restUntil", s.restUntil); put("restState", s.restState.name)
         put("workoutCompleted", s.workoutCompleted); put("startedAt", s.startedAt)
         put("isPaused", s.isPaused); put("restRemainingMs", s.restRemainingMs); put("exerciseNotes", notesMapToJson(s.exerciseNotes))
+        put("workoutDay", s.workoutDay?.let(::workoutDayCacheToJson) ?: JSONObject.NULL)
     }
     private fun activeWorkoutFromJson(o: JSONObject): ActiveWorkoutState {
         val restUntil = o.optLong("restUntil", 0L)
@@ -358,7 +359,8 @@ class GymFlowStore(private val context: Context) {
             startedAt = o.optLong("startedAt", System.currentTimeMillis()),
             isPaused = o.optBoolean("isPaused", false),
             restRemainingMs = o.optLong("restRemainingMs", 0L),
-            exerciseNotes = notesMapFromJson(o.optJSONObject("exerciseNotes"))
+            exerciseNotes = notesMapFromJson(o.optJSONObject("exerciseNotes")),
+            workoutDay = o.optJSONObject("workoutDay")?.let(::workoutDayCacheFromJson)
         )
     }
 
