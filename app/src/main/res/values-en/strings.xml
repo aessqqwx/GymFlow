@@ -110,7 +110,7 @@
     <string name="today_s_progress" formatted="false">Today\'s progress</string>
     <string name="workout_done" formatted="false">Workout</string>
     <string name="support_project" formatted="false">Support the project</string>
-    <string name="support_project_description" formatted="false">GymFlow is built by a small team. If the app has been useful, telling friends about it or leaving a review on our Telegram channel is the best support you can give.</string>
+    <string name="support_project_description" formatted="false">GymFlow is developed by a small team. Support is optional and does not affect app features.</string>
     <string name="how_was_your_workout" formatted="false">How was your workout?</string>
     <string name="workout_completed_label" formatted="false">Workout complete</string>
     <string name="member_since" formatted="false">Member since %1$s</string>
@@ -783,6 +783,4 @@ Describe your idea, bug or suggestion:
     <string name="missed_workout_title" formatted="false">Time to come back</string>
     <string name="missed_workout_reminder" formatted="false">%1$sno workout yet today. A short session is enough.</string>
     <string name="streak" formatted="false">Streak</string>
-    <string name="workout_save_failed">Could not save the workout. Please try again.</string>
-    <string name="retry_save">Retry</string>
 </resources>

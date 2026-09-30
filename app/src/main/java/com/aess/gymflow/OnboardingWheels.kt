@@ -29,8 +29,8 @@ fun PickerValueCard(label: String, value: String, onClick: () -> Unit) {
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
-                Text(value, fontWeight = FontWeight.SemiBold, fontSize = 19.sp)
+                Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                Text(value, fontWeight = FontWeight.SemiBold, fontSize = 19.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             }
             Icon(Icons.Rounded.ChevronRight, contentDescription = null)
         }

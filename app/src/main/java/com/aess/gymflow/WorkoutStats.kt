@@ -79,10 +79,9 @@ data class GymFlowLevel(
     val progress: Float get() = if (xpForNextLevel <= 0) 1f else (xpIntoLevel.toFloat() / xpForNextLevel).coerceIn(0f, 1f)
 }
 
-/** XP needed to go from [level] → level+1 (level is 1-based). Soft curve. */
+/** XP needed to go from [level] to the next level, derived without persisted counters. */
 fun xpRequiredForLevel(level: Int): Int {
-    val n = level.coerceAtLeast(1)
-    return 100 + (n - 1) * 40 + ((n - 1) * (n - 1) * 5)
+    return (1000L + (level.coerceAtLeast(1).toLong() - 1L) * 500L).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
 }
 
 fun computeTotalXp(logs: List<WorkoutLog>, records: List<PersonalRecord> = emptyList()): Int {
@@ -105,7 +104,6 @@ fun computeLevel(totalXp: Int): GymFlowLevel {
         }
         remaining -= need
         level++
-        if (level > 200) return GymFlowLevel(200, totalXp, 0, xpRequiredForLevel(200))
     }
 }
 

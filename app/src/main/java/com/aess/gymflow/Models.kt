@@ -102,9 +102,7 @@ data class ActiveWorkoutState(
     /** Remaining rest ms when [restState] is PAUSED. */
     val restRemainingMs: Long = 0L,
     /** Session notes keyed by exerciseId. */
-    val exerciseNotes: Map<String, String> = emptyMap(),
-    /** Exact session plan, including custom/template workouts. */
-    val workoutDay: WorkoutDay? = null
+    val exerciseNotes: Map<String, String> = emptyMap()
 )
 
 data class UserProfile(
@@ -130,8 +128,9 @@ data class UserProfile(
     val avatarUri: String = "",
     val trainingPlace: String = "GYM",
     val homeEquipment: Set<String> = emptySet(),
-    val trainingDays: Set<String> = setOf("TUESDAY", "FRIDAY", "SUNDAY"),
+    val trainingDays: Set<String> = emptySet(),
     val selectedProgram: String = "FULL_BODY",
+    val customWorkoutName: String = "",
     val dayFocus: Map<String, String> = emptyMap(),
     val selectedExerciseIds: Map<String, List<String>> = emptyMap(),
     val fontScale: Float = 1f,

@@ -2,7 +2,14 @@ package com.aess.gymflow
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -10,6 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
+import kotlinx.coroutines.delay
 import java.time.DayOfWeek
 import kotlin.math.PI
 import kotlin.math.abs
@@ -55,6 +64,7 @@ fun OnboardingV2(
 ) {
     var step by remember { mutableIntStateOf(0) }
     var language by remember { mutableStateOf(initial.appLanguage) }
+    var languageMenu by remember { mutableStateOf(false) }
     var place by remember { mutableStateOf(initial.trainingPlace) }
     var equipment by remember { mutableStateOf(initial.homeEquipment) }
     var selectedDays by remember { mutableStateOf(initial.trainingDays) }
@@ -62,6 +72,8 @@ fun OnboardingV2(
     var birthDate by remember { mutableStateOf(normalizeBirthDate(initial.birthDate)) }
     var weightKg by remember { mutableIntStateOf(70) }
     var heightCm by remember { mutableIntStateOf(175) }
+    var manualPlan by remember { mutableStateOf(initial.selectedProgram == "CUSTOM") }
+    var customName by remember { mutableStateOf(initial.customWorkoutName) }
     var program by remember { mutableStateOf(initial.selectedProgram) }
     var fitnessGoals by remember { mutableStateOf(initial.fitnessGoals) }
     var sessionDuration by remember {
@@ -109,7 +121,8 @@ fun OnboardingV2(
         trainingDays = selectedDays,
         sex = sex,
         birthDate = normalizeBirthDate(birthDate),
-        selectedProgram = program,
+        selectedProgram = if (manualPlan) "CUSTOM" else program,
+        customWorkoutName = customName.trim(),
         fitnessGoals = fitnessGoals,
         sessionDurationMinutes = sessionDuration,
         dayFocus = dayFocus,
@@ -131,9 +144,10 @@ fun OnboardingV2(
 
     fun nextStep() {
         when (step) {
+            0 -> step = 2
             2 -> step = if (place == "HOME") 3 else 4
             4 -> step = 5
-            8 -> { normalizeExerciseSelection(); step = 9 }
+            8 -> { if (!manualPlan) normalizeExerciseSelection(); step = 9 }
             12 -> step = 13
             else -> step++
         }
@@ -148,6 +162,7 @@ fun OnboardingV2(
         6 -> program.isNotBlank()
         7 -> fitnessGoals.isNotEmpty()
         8 -> sessionDuration in setOf(20, 30, 45, 60, 90)
+        9 -> !manualPlan || (customName.isNotBlank() && selectedDays.all { day -> selectedExercises[day].orEmpty().isNotEmpty() && selectedExercises[day].orEmpty().distinct().size == selectedExercises[day].orEmpty().size })
         10 -> first.isNotBlank()
         11 -> nutritionValid
         12 -> termsAccepted && privacyAccepted
@@ -156,17 +171,10 @@ fun OnboardingV2(
 
     legalDialog?.let { type ->
         val terms = type == "terms"
-        AlertDialog(
-            onDismissRequest = { legalDialog = null },
-            confirmButton = { TextButton(onClick = { legalDialog = null }) { Text(gs(language, R.string.close)) } },
-            title = { Text(if (terms) gs(language, R.string.terms_of_use) else gs(language, R.string.privacy_policy)) },
-            text = {
-                Text(
-                    if (terms) gs(language, R.string.terms_full_text) else gs(language, R.string.privacy_full_text),
-                    modifier = Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState()),
-                    lineHeight = 20.sp
-                )
-            }
+        LegalDocumentDialog(
+            title = if (terms) gs(language, R.string.terms_of_use) else gs(language, R.string.privacy_policy),
+            body = if (terms) gs(language, R.string.terms_full_text) else gs(language, R.string.privacy_full_text),
+            onClose = { legalDialog = null }
         )
     }
 
@@ -195,12 +203,12 @@ fun OnboardingV2(
 
     Scaffold(
         bottomBar = {
-            Surface(tonalElevation = 2.dp) {
-                Column(Modifier.navigationBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Surface(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .96f), tonalElevation = 2.dp) {
+                Column(Modifier.navigationBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     ExpressiveSurfaceButton(
                         onClick = ::nextStep,
                         enabled = canContinue,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 58.dp),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     ) {
@@ -211,46 +219,71 @@ fun OnboardingV2(
                         )
                     }
                     if (step == 0) {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                         Text(
                             gs(language, R.string.already_used_gymflow),
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.weight(1f),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 12.sp,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
-                        TextButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) {
+                        TextButton(onClick = onImport) {
                             Icon(Icons.Rounded.UploadFile, null)
                             Spacer(Modifier.width(8.dp))
                             Text(gs(language, R.string.import_data))
+                        }
                         }
                     }
                 }
             }
         }
     ) { pad ->
-        AnimatedContent(targetState = step, transitionSpec = { directionalMotion(targetState > initialState) }, modifier = Modifier.fillMaxSize().padding(pad), label = "onboarding_step") { current ->
+        AnimatedContent(targetState = step, modifier = Modifier.fillMaxSize().padding(pad), transitionSpec = { directionalMotion(targetState > initialState) }, label = "onboarding_step") { current ->
             LazyColumn(
                 modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 20.dp),
                 contentPadding = PaddingValues(top = 24.dp, bottom = 28.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                item { OnboardingTitle(titleFor(current, language), subtitleFor(current, language)) }
+                item {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+                        Box(Modifier.weight(1f)) { OnboardingTitle(titleFor(current, language), subtitleFor(current, language)) }
+                        Box {
+                            IconButton(onClick = { languageMenu = true }) { Icon(Icons.Rounded.Language, gs(language, R.string.language)) }
+                            DropdownMenu(expanded = languageMenu, onDismissRequest = { languageMenu = false }) {
+                                DropdownMenuItem(text = { Text("Русский") }, onClick = { language = "RU"; languageMenu = false })
+                                DropdownMenuItem(text = { Text("English") }, onClick = { language = "EN"; languageMenu = false })
+                            }
+                        }
+                    }
+                }
                 when (current) {
                     0 -> introContent(language)
-                    1 -> item { LanguageCards(language) { language = it } }
                     2 -> item { PlaceCards(language, place) { place = it } }
                     3 -> item { EquipmentCards(language, equipment) { equipment = it } }
                     4 -> item { DayPicker(language, selectedDays) { selectedDays = it } }
                     5 -> item { BodyFields(language, birthDate, { birthDate = it }, sex, { sex = it }, heightCm, { heightCm = it }, weightKg, { weightKg = it }) }
-                    6 -> itemsIndexed(programOptions) { _, option -> ProgramCard(language, option, program == option) { program = option } }
+                    6 -> {
+                        item {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                ChoiceCard(if (language == "EN") "Choose automatically" else "Подобрать автоматически", !manualPlan) { manualPlan = false }
+                                ChoiceCard(if (language == "EN") "Build my own" else "Собрать самому", manualPlan) {
+                                    manualPlan = true
+                                    selectedExercises = selectedDays.associateWith { selectedExercises[it].orEmpty() }
+                                }
+                            }
+                        }
+                        if (!manualPlan) itemsIndexed(programOptions) { _, option -> ProgramCard(language, option, program == option) { program = option } }
+                    }
                     7 -> item { FitnessGoalCards(language, fitnessGoals) { fitnessGoals = it } }
                     8 -> item { SessionDurationCards(language, sessionDuration) { sessionDuration = it } }
                     9 -> item {
+                        if (manualPlan) OutlinedTextField(customName, { customName = it.take(70) }, Modifier.fillMaxWidth(), label = { Text(if (language == "EN") "Workout name" else "Название тренировки") }, singleLine = true)
                         WorkoutDayEditor(
                             l = language,
                             profile = tempProfile(),
                             selected = selectedExercises,
-                            onSelectedChanged = { selectedExercises = it }
+                            onSelectedChanged = { selectedExercises = it },
+                            onFocusChanged = { day, focus -> dayFocus = dayFocus + (day to focus); selectedExercises = selectedExercises + (day to emptyList()) }
                         )
                     }
                     10 -> item { NameFields(language, first, { first = it }, last, { last = it }) }
@@ -426,14 +459,24 @@ private fun IntroFeatureTile(language: String, data: IntroTileData, modifier: Mo
 
 @Composable private fun PlaceCards(l: String, value: String, set: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        BigChoice(Icons.Rounded.FitnessCenter, gs(l, R.string.gym), gs(l, R.string.barbells_machines_dumbbells_and_other_equipm), value == "GYM") { set("GYM") }
-        BigChoice(Icons.Rounded.Home, gs(l, R.string.home), gs(l, R.string.bodyweight_dumbbells_a_pull_up_bar_and_minim), value == "HOME") { set("HOME") }
+        BigChoice(Icons.Rounded.FitnessCenter, if (l == "EN") "Gym" else "Спортзал", gs(l, R.string.barbells_machines_dumbbells_and_other_equipm), value == "GYM") { set("GYM") }
+        BigChoice(Icons.Rounded.Home, if (l == "EN") "Home" else "Дома", gs(l, R.string.bodyweight_dumbbells_a_pull_up_bar_and_minim), value == "HOME") { set("HOME") }
     }
 }
 
 @Composable private fun BigChoice(icon: ImageVector, title: String, subtitle: String, selected: Boolean, onClick: () -> Unit) {
-    ExpressiveSurfaceButton(onClick, Modifier.fillMaxWidth(), containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant) {
-        Row(verticalAlignment = Alignment.CenterVertically) { Icon(icon, null, Modifier.size(34.dp)); Spacer(Modifier.width(14.dp)); Column(Modifier.weight(1f)) { Text(title, fontWeight = FontWeight.Bold, fontSize = 19.sp); Spacer(Modifier.height(4.dp)); Text(subtitle, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 19.sp) }; RadioButton(selected, onClick = onClick) }
+    ExpressiveSurfaceButton(onClick, Modifier.fillMaxWidth().heightIn(min = 116.dp), containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = .65f)) {
+                Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) { Icon(icon, null, Modifier.size(24.dp)) }
+            }
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(title, fontWeight = FontWeight.Bold, fontSize = 19.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(subtitle, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 19.sp, minLines = 3, maxLines = 3, overflow = TextOverflow.Ellipsis)
+            }
+            if (selected) { Spacer(Modifier.width(8.dp)); Icon(Icons.Rounded.Check, null, Modifier.size(20.dp)) }
+        }
     }
 }
 
@@ -449,37 +492,32 @@ private fun IntroFeatureTile(language: String, data: IntroTileData, modifier: Mo
 }
 
 @Composable
-private fun DayPicker(l: String, value: Set<String>, set: (Set<String>) -> Unit) {
+fun DayPicker(l: String, value: Set<String>, set: (Set<String>) -> Unit) {
     val weekdays = onboardingDays.filter { it.value <= 5 }.map { it.name }.toSet()
     val weekend = onboardingDays.filter { it.value >= 6 }.map { it.name }.toSet()
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             onboardingDays.forEach { day ->
                 val selected = day.name in value
                 DayToggleBox(
                     label = dayShort(day, l),
                     selected = selected,
                     onClick = { set(if (selected) value - day.name else value + day.name) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.width(52.dp)
                 )
             }
         }
+        Text(gs(l, R.string.days_selected, value.size), color = MaterialTheme.colorScheme.onSurfaceVariant)
         Row(
-            Modifier.fillMaxWidth(),
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                gs(l, R.string.days_selected, value.size),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.weight(1f))
             SuggestionChip(onClick = { set(weekdays) }, label = { Text(gs(l, R.string.weekdays)) })
             SuggestionChip(onClick = { set(weekend) }, label = { Text(gs(l, R.string.weekend)) })
             TextButton(onClick = { set(emptySet()) }, enabled = value.isNotEmpty()) {
-                Text(gs(l, R.string.clear))
+                Text(gs(l, R.string.clear), maxLines = 1, softWrap = false)
             }
         }
     }
@@ -494,7 +532,7 @@ private fun DayToggleBox(
 ) {
     Surface(
         onClick = onClick,
-        modifier = modifier.height(46.dp),
+        modifier = modifier.height(56.dp),
         shape = RoundedCornerShape(12.dp),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
         border = BorderStroke(
@@ -536,9 +574,12 @@ private fun DayToggleBox(
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(gs(l, R.string.sex), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            SexChoice(gs(l, R.string.male), sex == "MALE", { setSex("MALE") }, Modifier.weight(1f))
-            SexChoice(gs(l, R.string.female), sex == "FEMALE", { setSex("FEMALE") }, Modifier.weight(1f))
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            listOf("MALE", "FEMALE").forEachIndexed { index, value ->
+                SegmentedButton(selected = sex == value, onClick = { setSex(value) }, shape = SegmentedButtonDefaults.itemShape(index, 2), icon = {}) {
+                    Text(if (l == "EN") { if (index == 0) "Male" else "Female" } else { if (index == 0) "Мужской" else "Женский" }, maxLines = 1, softWrap = false)
+                }
+            }
         }
         PickerValueCard(gs(l, R.string.height), gs(l, R.string.height_value, heightCm)) { showHeight = true }
         PickerValueCard(gs(l, R.string.weight), gs(l, R.string.weight_value, weightKg)) { showWeight = true }
@@ -655,16 +696,16 @@ private fun SessionDurationCards(l: String, selected: Int, onChange: (Int) -> Un
     }
 }
 
-@Composable private fun WorkoutDayEditor(l: String, profile: UserProfile, selected: Map<String, List<String>>, onSelectedChanged: (Map<String,List<String>>) -> Unit) {
+@Composable private fun WorkoutDayEditor(l: String, profile: UserProfile, selected: Map<String, List<String>>, onSelectedChanged: (Map<String,List<String>>) -> Unit, onFocusChanged: (String, String) -> Unit) {
     val orderedDays = profile.trainingDays.mapNotNull { runCatching { DayOfWeek.valueOf(it) }.getOrNull() }.sortedBy { it.value }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         orderedDays.forEachIndexed { index, day ->
             var expanded by remember(day) { mutableStateOf(false) }
             val arrowRotation by animateFloatAsState(if (expanded) 180f else 0f, GymGlowMotion.fastSpatial(), label = "day_expand_arrow")
             val all = workoutCandidatesFor(profile.copy(selectedExerciseIds = emptyMap()), day, index)
-            val ids = selected[day.name].orEmpty().ifEmpty { all.take(7).map { it.id } }
+            val ids = if (selected.containsKey(day.name)) selected[day.name].orEmpty().distinct() else if (profile.selectedProgram == "CUSTOM") emptyList() else all.take(7).map { it.id }
             val chosen = ids.mapNotNull { id -> all.firstOrNull { it.id == id } }
-            Surface(Modifier.fillMaxWidth(), shape = RoundedCornerShape(30.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+            Surface(Modifier.fillMaxWidth().animateContentSize(GymGlowMotion.defaultSpatial()), shape = RoundedCornerShape(30.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
                 Column {
                     Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) { Text(dayName(day, l), fontWeight = FontWeight.Bold, fontSize = 19.sp); Text(chosen.joinToString(" • ") { exerciseMuscle(it, l).lowercase().replaceFirstChar { c -> c.uppercase() } }.take(60), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp) }
@@ -672,7 +713,14 @@ private fun SessionDurationCards(l: String, selected: Int, onChange: (Int) -> Un
                     }
                     AnimatedVisibility(expanded, enter = expandMotion(), exit = collapseMotion()) {
                         Column(Modifier.padding(start = 14.dp, end = 14.dp, bottom = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            all.forEach { exercise ->
+                            if (profile.selectedProgram == "CUSTOM") {
+                                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    listOf("Всё тело", "Верх тела", "Грудь · Трицепс", "Спина · Бицепс", "Ноги · Ягодицы", "Мобилити · Растяжка").forEach { focus ->
+                                        FilterChip(selected = (profile.dayFocus[day.name] ?: "Всё тело") == focus, onClick = { onFocusChanged(day.name, focus) }, label = { Text(if (l == "EN") mapOf("Всё тело" to "Full body", "Верх тела" to "Upper body", "Грудь · Трицепс" to "Chest · Triceps", "Спина · Бицепс" to "Back · Biceps", "Ноги · Ягодицы" to "Legs · Glutes", "Мобилити · Растяжка" to "Mobility · Stretching").getValue(focus) else focus, maxLines = 1, softWrap = false) })
+                                    }
+                                }
+                            }
+                            chosen.forEach { exercise ->
                                 val enabled = exercise.id in ids
                                 if (enabled) {
                                     val pos = ids.indexOf(exercise.id)
@@ -695,7 +743,7 @@ private fun SessionDurationCards(l: String, selected: Int, onChange: (Int) -> Un
                             val disabled = all.filter { it.id !in ids }
                             if (disabled.isNotEmpty()) {
                                 Text(gs(l, R.string.add_exercise), fontWeight = FontWeight.SemiBold)
-                                disabled.take(3).forEach { ex -> TextButton(onClick = { onSelectedChanged(selected + (day.name to (ids + ex.id))) }) { Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(6.dp)); Text(exerciseTitle(ex,l)) } }
+                                disabled.forEach { ex -> TextButton(onClick = { onSelectedChanged(selected + (day.name to (ids + ex.id))) }) { Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(6.dp)); Text(exerciseTitle(ex,l)) } }
                             }
                         }
                     }
@@ -722,10 +770,37 @@ private fun SessionDurationCards(l: String, selected: Int, onChange: (Int) -> Un
 }
 
 @Composable private fun AgreementCard(l:String, terms:Boolean, privacy:Boolean,setTerms:(Boolean)->Unit,setPrivacy:(Boolean)->Unit, open:(String)->Unit) {
-    ExpressiveCard(Modifier.fillMaxWidth()) {
-        Column(verticalArrangement=Arrangement.spacedBy(10.dp)) {
-            Row(verticalAlignment=Alignment.CenterVertically){Checkbox(terms,setTerms);Column(Modifier.weight(1f)){Text(gs(l, R.string.i_accept_the_terms_of_use));TextButton(onClick={open("terms")},contentPadding=PaddingValues(0.dp)){Text(gs(l, R.string.open_terms))}}}
-            Row(verticalAlignment=Alignment.CenterVertically){Checkbox(privacy,setPrivacy);Column(Modifier.weight(1f)){Text(gs(l, R.string.i_have_read_the_privacy_policy));TextButton(onClick={open("privacy")},contentPadding=PaddingValues(0.dp)){Text(gs(l, R.string.open_privacy_policy))}}}
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        LegalAgreementRow(gs(l, R.string.terms_of_use), if (l == "EN") "Rules for using GymFlow" else "Правила использования GymFlow", terms, setTerms, { open("terms") }, l)
+        LegalAgreementRow(gs(l, R.string.privacy_policy), if (l == "EN") "How local data is handled" else "Как обрабатываются локальные данные", privacy, setPrivacy, { open("privacy") }, l)
+    }
+}
+
+@Composable private fun LegalAgreementRow(title: String, description: String, checked: Boolean, onChecked: (Boolean)->Unit, onOpen: ()->Unit, l: String) {
+    Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+        Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.Top) {
+            Checkbox(checked, onChecked)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(title, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+                Text(description, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                TextButton(onClick = onOpen) { Text(if (l == "EN") "Open" else "Открыть", maxLines = 1) }
+            }
+        }
+    }
+}
+
+@Composable internal fun LegalDocumentDialog(title: String, body: String, onClose: ()->Unit) {
+    androidx.compose.ui.window.Dialog(onDismissRequest = onClose, properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
+        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            Column(Modifier.statusBarsPadding().navigationBarsPadding()) {
+                Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onClose) { Icon(Icons.Rounded.ArrowBack, title) }
+                    Text(title, Modifier.weight(1f), fontSize = 24.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                }
+                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                    body.split("\n\n").forEach { paragraph -> Text(paragraph, fontSize = 16.sp, lineHeight = 25.sp) }
+                }
+            }
         }
     }
 }
@@ -744,6 +819,7 @@ private fun SessionDurationCards(l: String, selected: Int, onChange: (Int) -> Un
     )
     var messageIndex by remember { mutableIntStateOf(0) }
     LaunchedEffect(preparedProfile) {
+        val startedAt = android.os.SystemClock.elapsedRealtime()
         messageIndex = 0
         require(preparedProfile.trainingDays.isNotEmpty())
         require(preparedProfile.proteinGoal > 0 && preparedProfile.calorieGoal > 0 && preparedProfile.waterGoalMl > 0)
@@ -764,13 +840,14 @@ private fun SessionDurationCards(l: String, selected: Int, onChange: (Int) -> Un
 
         messageIndex = 4
         primeWorkoutPlanCache(preparedProfile, generated)
+        delay((1500L - (android.os.SystemClock.elapsedRealtime() - startedAt)).coerceAtLeast(0L))
         onReady(preparedProfile, generated)
     }
     Box(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(28.dp),contentAlignment=Alignment.Center) {
         Column(horizontalAlignment=Alignment.CenterHorizontally) {
             GymFlowMorphingShape(Modifier.size(126.dp))
             Spacer(Modifier.height(30.dp))
-            AnimatedContent(messageIndex, transitionSpec = { effectsMotion() }, label="loading_message") { i -> Text(messages[i],fontSize=18.sp,fontWeight=FontWeight.SemiBold) }
+            AnimatedContent(messageIndex,transitionSpec={effectsMotion()},label="loading_message") { i -> Text(messages[i],fontSize=18.sp,fontWeight=FontWeight.SemiBold) }
         }
     }
 }

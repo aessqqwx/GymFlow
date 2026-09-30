@@ -6,11 +6,14 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.ripple
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,15 +21,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.ripple
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
@@ -52,13 +52,13 @@ fun ExpressiveSurfaceButton(
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val scale = animateFloatAsState(
+    val scale by animateFloatAsState(
         targetValue = if (pressed && enabled) GymGlowMotion.PressScale else 1f,
         animationSpec = GymGlowMotion.fastSpatial(),
         label = "expressive_press"
     )
     Surface(
-        modifier = modifier.graphicsLayer { scaleX = scale.value; scaleY = scale.value },
+        modifier = modifier.heightIn(min = 48.dp).scale(scale),
         shape = RoundedCornerShape(corner),
         color = if (enabled) containerColor else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .55f),
         contentColor = if (enabled) contentColor else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -69,11 +69,9 @@ fun ExpressiveSurfaceButton(
                 .clickable(
                     interactionSource = interaction,
                     indication = ripple(),
-                    role = Role.Button,
                     enabled = enabled,
                     onClick = onClick
                 )
-                .heightIn(min = 48.dp)
                 .padding(contentPadding),
             contentAlignment = Alignment.Center
         ) { content() }
@@ -103,13 +101,12 @@ fun GymFlowMorphingShape(modifier: Modifier = Modifier) {
         initialValue = 0f,
         targetValue = 5f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = GymGlowMotion.LoaderCycleMillis, easing = LinearEasing),
+            animation = tween(durationMillis = 5_800, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "gymflow_morph_phase"
     )
     val color = MaterialTheme.colorScheme.primary
-    val path = remember { Path() }
     Canvas(modifier) {
         val cx = size.width / 2f
         val cy = size.height / 2f
@@ -129,7 +126,7 @@ fun GymFlowMorphingShape(modifier: Modifier = Modifier) {
             else -> .67 + .33 * ((cos(5 * angle) + 1) / 2) // star-like
         }
 
-        path.reset()
+        val path = Path()
         val count = 96
         for (i in 0..count) {
             val angle = 2 * PI * i / count - PI / 2

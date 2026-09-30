@@ -7,6 +7,10 @@ import org.json.JSONObject
 class GymFlowStore(private val context: Context) {
     private val prefs = context.getSharedPreferences("gymflow_v1", Context.MODE_PRIVATE)
     private val activeWorkoutWriteLock = Any()
+    private val activeWorkoutWriteEpoch = java.util.concurrent.atomic.AtomicLong(0)
+    private val activeWorkoutExecutor = java.util.concurrent.Executors.newSingleThreadExecutor { r ->
+        Thread(r, "gymflow-active-workout-write").apply { isDaemon = true }
+    }
 
     fun loadProgress(): List<ProgressEntry> {
         val saved = runCatching {
@@ -87,11 +91,14 @@ class GymFlowStore(private val context: Context) {
 
     fun saveActiveWorkout(state: ActiveWorkoutState?) {
         val payload = if (state == null) null else activeWorkoutToJson(state).toString()
-        // apply() updates memory immediately and schedules the disk write itself.
-        // Export/reopen must see the latest session without racing a second executor.
-        synchronized(activeWorkoutWriteLock) {
-            if (payload == null) prefs.edit().remove("active_workout").apply()
-            else prefs.edit().putString("active_workout", payload).apply()
+        val epoch = activeWorkoutWriteEpoch.incrementAndGet()
+        // JSON on caller thread; SharedPreferences write on a single background thread.
+        activeWorkoutExecutor.execute {
+            synchronized(activeWorkoutWriteLock) {
+                if (epoch != activeWorkoutWriteEpoch.get()) return@execute
+                if (payload == null) prefs.edit().remove("active_workout").apply()
+                else prefs.edit().putString("active_workout", payload).apply()
+            }
         }
     }
 
@@ -123,8 +130,10 @@ class GymFlowStore(private val context: Context) {
             avatarUri = prefs.getString("avatar_uri", "") ?: "",
             trainingPlace = prefs.getString("training_place", "GYM") ?: "GYM",
             homeEquipment = prefs.getStringSet("home_equipment", null)?.toSet() ?: emptySet(),
-            trainingDays = prefs.getStringSet("training_days", null)?.toSet()?.ifEmpty { null } ?: setOf("TUESDAY", "FRIDAY", "SUNDAY"),
+            trainingDays = prefs.getStringSet("training_days", null)?.toSet()
+                ?: if (prefs.getBoolean("onboarding_completed", false)) setOf("TUESDAY", "FRIDAY", "SUNDAY") else emptySet(),
             selectedProgram = prefs.getString("selected_program", "FULL_BODY") ?: "FULL_BODY",
+            customWorkoutName = prefs.getString("custom_workout_name", "").orEmpty(),
             dayFocus = decodeDayFocus(prefs.getString("day_focus", "") ?: ""),
             selectedExerciseIds = decodeExerciseMap(prefs.getString("selected_exercises", "") ?: ""),
             fontScale = prefs.getFloat("font_scale", 1f),
@@ -167,6 +176,7 @@ class GymFlowStore(private val context: Context) {
             .putStringSet("home_equipment", profile.homeEquipment.toSet())
             .putStringSet("training_days", profile.trainingDays.toSet())
             .putString("selected_program", profile.selectedProgram)
+            .putString("custom_workout_name", profile.customWorkoutName)
             .putString("day_focus", encodeDayFocus(profile.dayFocus))
             .putString("selected_exercises", encodeExerciseMap(profile.selectedExerciseIds))
             .putFloat("font_scale", profile.fontScale)
@@ -249,7 +259,7 @@ class GymFlowStore(private val context: Context) {
         put("onboardingCompleted", p.onboardingCompleted); put("monthlyCheckInEnabled", p.monthlyCheckInEnabled); put("nextMonthlyCheckInAt", p.nextMonthlyCheckInAt)
         put("firstName", p.firstName); put("lastName", p.lastName); put("profileDescription", p.profileDescription); put("avatarUri", p.avatarUri)
         put("trainingPlace", p.trainingPlace); put("homeEquipment", JSONArray(p.homeEquipment.toList())); put("trainingDays", JSONArray(p.trainingDays.toList()))
-        put("selectedProgram", p.selectedProgram); put("dayFocus", JSONObject(p.dayFocus)); put("selectedExerciseIds", JSONObject().apply { p.selectedExerciseIds.forEach { (k,v) -> put(k, JSONArray(v)) } })
+        put("customWorkoutName", p.customWorkoutName); put("selectedProgram", p.selectedProgram); put("dayFocus", JSONObject(p.dayFocus)); put("selectedExerciseIds", JSONObject().apply { p.selectedExerciseIds.forEach { (k,v) -> put(k, JSONArray(v)) } })
         put("fontScale", p.fontScale.toDouble()); put("termsAccepted", p.termsAccepted); put("privacyAccepted", p.privacyAccepted)
         put("notificationsEnabled", p.notificationsEnabled); put("workoutNotifications", p.workoutNotifications); put("proteinNotifications", p.proteinNotifications)
         put("motivationNotifications", p.motivationNotifications); put("measurementNotifications", p.measurementNotifications)
@@ -264,8 +274,8 @@ class GymFlowStore(private val context: Context) {
         sex = o.optString("sex", "UNSPECIFIED"), trainingExperience = o.optString("trainingExperience", "UNSPECIFIED"), profilePromptDismissedAt = o.optLong("profilePromptDismissedAt", 0L),
         onboardingCompleted = o.optBoolean("onboardingCompleted", true), monthlyCheckInEnabled = o.optBoolean("monthlyCheckInEnabled", true), nextMonthlyCheckInAt = o.optLong("nextMonthlyCheckInAt", 0L),
         firstName = o.optString("firstName", ""), lastName = o.optString("lastName", ""), profileDescription = o.optString("profileDescription", ""), avatarUri = o.optString("avatarUri", ""),
-        trainingPlace = o.optString("trainingPlace", "GYM"), homeEquipment = o.optJSONArray("homeEquipment").toStringSet(), trainingDays = o.optJSONArray("trainingDays").toStringSet().ifEmpty { setOf("TUESDAY", "FRIDAY", "SUNDAY") },
-        selectedProgram = o.optString("selectedProgram", "FULL_BODY"), dayFocus = o.optJSONObject("dayFocus").toStringMap(), selectedExerciseIds = o.optJSONObject("selectedExerciseIds").toStringListMap(),
+        trainingPlace = o.optString("trainingPlace", "GYM"), homeEquipment = o.optJSONArray("homeEquipment").toStringSet(), trainingDays = if (o.has("trainingDays")) o.optJSONArray("trainingDays").toStringSet() else if (o.optBoolean("onboardingCompleted", true)) setOf("TUESDAY", "FRIDAY", "SUNDAY") else emptySet(),
+        customWorkoutName = o.optString("customWorkoutName", ""), selectedProgram = o.optString("selectedProgram", "FULL_BODY"), dayFocus = o.optJSONObject("dayFocus").toStringMap(), selectedExerciseIds = o.optJSONObject("selectedExerciseIds").toStringListMap(),
         fontScale = o.optDouble("fontScale", 1.0).toFloat().coerceIn(.85f, 1.35f), termsAccepted = o.optBoolean("termsAccepted", false), privacyAccepted = o.optBoolean("privacyAccepted", o.optBoolean("termsAccepted", false)),
         notificationsEnabled = o.optBoolean("notificationsEnabled", o.optBoolean("reminderEnabled", true)), workoutNotifications = o.optBoolean("workoutNotifications", true), proteinNotifications = o.optBoolean("proteinNotifications", true),
         motivationNotifications = o.optBoolean("motivationNotifications", true), measurementNotifications = o.optBoolean("measurementNotifications", true),
@@ -331,7 +341,6 @@ class GymFlowStore(private val context: Context) {
         put("dayKey", s.dayKey); put("currentExerciseIndex", s.currentExerciseIndex); put("currentSetIndex", s.currentSetIndex)
         put("completedSets", completedSetsToJson(s.completedSets)); put("restUntil", s.restUntil); put("restState", s.restState.name)
         put("workoutCompleted", s.workoutCompleted); put("startedAt", s.startedAt)
-        put("workoutDay", s.workoutDay?.let(::workoutDayCacheToJson) ?: JSONObject.NULL)
         put("isPaused", s.isPaused); put("restRemainingMs", s.restRemainingMs); put("exerciseNotes", notesMapToJson(s.exerciseNotes))
     }
     private fun activeWorkoutFromJson(o: JSONObject): ActiveWorkoutState {
@@ -349,8 +358,7 @@ class GymFlowStore(private val context: Context) {
             startedAt = o.optLong("startedAt", System.currentTimeMillis()),
             isPaused = o.optBoolean("isPaused", false),
             restRemainingMs = o.optLong("restRemainingMs", 0L),
-            exerciseNotes = notesMapFromJson(o.optJSONObject("exerciseNotes")),
-            workoutDay = o.optJSONObject("workoutDay")?.let(::workoutDayCacheFromJson)
+            exerciseNotes = notesMapFromJson(o.optJSONObject("exerciseNotes"))
         )
     }
 
@@ -430,6 +438,7 @@ class GymFlowStore(private val context: Context) {
     )
 
     fun resetAll() {
+        activeWorkoutWriteEpoch.incrementAndGet()
         synchronized(activeWorkoutWriteLock) {
             prefs.edit().clear().commit()
         }

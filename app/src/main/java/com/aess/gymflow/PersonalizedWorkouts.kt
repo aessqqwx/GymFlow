@@ -94,6 +94,7 @@ internal fun workoutPlanSignature(profile: UserProfile): String = buildString {
     append(profile.homeEquipment.sorted().joinToString(",")).append('|')
     append(profile.trainingDays.sorted().joinToString(",")).append('|')
     append(profile.selectedProgram).append('|')
+    append(profile.customWorkoutName).append('|')
     append(profile.dayFocus.toSortedMap().entries.joinToString(",") { "${it.key}=${it.value}" }).append('|')
     append(profile.selectedExerciseIds.toSortedMap().entries.joinToString(",") { (day, ids) -> "$day=${ids.joinToString(";")}" }).append('|')
     append(profile.fitnessGoals.sorted().joinToString(",")).append('|')
@@ -173,13 +174,16 @@ fun workoutsFor(profile: UserProfile): List<WorkoutDay> {
         val focus = profile.dayFocus[day.name]?.takeIf { it.isNotBlank() } ?: programFocus(profile.selectedProgram, index)
         val dayTag = "custom_${day.name.lowercase()}"
         val all = candidates(profile.trainingPlace == "HOME", focus, profile.homeEquipment, dayTag)
-        val exercises = pickExercisesForDay(all, profile.selectedExerciseIds[day.name].orEmpty(), slots, profile.fitnessGoals)
+        val exercises = if (profile.selectedProgram == "CUSTOM") {
+            val ids = profile.selectedExerciseIds[day.name].orEmpty().distinct()
+            ids.mapNotNull { id -> all.firstOrNull { it.id == id } }.ifEmpty { all.take(1) }
+        } else pickExercisesForDay(all, profile.selectedExerciseIds[day.name].orEmpty(), slots, profile.fitnessGoals)
         WorkoutDay(
             key = "custom_${day.name}",
             dayOfWeek = day,
             shortDay = shortRu(day),
-            title = focus,
-            compactTitle = focus,
+            title = profile.customWorkoutName.takeIf { profile.selectedProgram == "CUSTOM" && it.isNotBlank() } ?: focus,
+            compactTitle = profile.customWorkoutName.takeIf { profile.selectedProgram == "CUSTOM" && it.isNotBlank() } ?: focus,
             exercises = exercises
         )
     }

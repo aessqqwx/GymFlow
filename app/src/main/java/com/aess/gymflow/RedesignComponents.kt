@@ -1,12 +1,12 @@
 package com.aess.gymflow
 
-import androidx.compose.runtime.getValue
-
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.selected
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,7 +56,7 @@ fun DaySelector(
     val today = remember(language) { LocalDate.now().dayOfWeek }
     val days = DayOfWeek.entries
     Row(
-        modifier.fillMaxWidth(),
+        modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         days.forEach { day ->
@@ -65,7 +66,7 @@ fun DaySelector(
                 isToday = day == today,
                 hasWorkout = day in workoutDays,
                 onClick = { onSelect(day) },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.width(if (day == today) 68.dp else 48.dp)
             )
         }
     }
@@ -86,16 +87,16 @@ private fun DayChip(
         label = "day_chip_bg"
     )
     val fg = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-    val height by animateDpAsState(if (isSelected) 56.dp else 50.dp, GymGlowMotion.fastSpatial(), label = "day_chip_height")
+    val height by animateDpAsState(if (isToday) 52.dp else 48.dp, GymGlowMotion.defaultSpatial(), label = "day_chip_height")
 
     Surface(
         modifier = modifier
             .height(height)
             .clip(RoundedCornerShape(16.dp))
-            .semantics { selected = isSelected }
             .clickable(onClick = onClick),
         color = bg,
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        border = if (isToday) BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Column(
             Modifier.fillMaxWidth(),

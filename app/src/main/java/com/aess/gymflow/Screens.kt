@@ -26,8 +26,11 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.List
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -35,7 +38,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -66,8 +68,7 @@ fun WorkoutScreen(
     onFinished: suspend (WorkoutLog, (Int) -> Unit) -> Unit,
     onHome: () -> Unit,
     onMoodRated: (Long, Int) -> Unit = { _, _ -> },
-    priorLogs: List<WorkoutLog> = emptyList(),
-    currentRecords: List<PersonalRecord> = emptyList()
+    priorLogs: List<WorkoutLog> = emptyList()
 ) {
     val language = LocalAppLanguage.current
     val haptic = LocalHapticFeedback.current
@@ -109,16 +110,10 @@ fun WorkoutScreen(
     var restRemainingMs by remember(day.key) { mutableLongStateOf(initialState.restRemainingMs) }
     var exerciseNotes by remember(day.key) { mutableStateOf(initialState.exerciseNotes) }
     val startedAt = remember(day.key) { initialState.startedAt }
-    val logsBeforeSession = remember(day.key, startedAt) {
-        priorLogs.filterNot { it.dayKey == day.key && it.startedAt == startedAt }
-    }
-    val recordsBeforeSession = remember(day.key, startedAt) { currentRecords }
     var now by remember { mutableLongStateOf(nowAtOpen) }
     var showPlan by remember { mutableStateOf(false) }
     var showNowPlaying by remember { mutableStateOf(false) }
     var transitionMessage by remember { mutableStateOf<String?>(null) }
-    var lastTransitionMessage by remember { mutableStateOf("") }
-    SideEffect { transitionMessage?.let { lastTransitionMessage = it } }
     var showNoteEditor by remember { mutableStateOf(false) }
 
     fun snapshot(): ActiveWorkoutState = ActiveWorkoutState(
@@ -132,8 +127,7 @@ fun WorkoutScreen(
         startedAt = startedAt,
         isPaused = isPaused,
         restRemainingMs = restRemainingMs,
-        exerciseNotes = exerciseNotes,
-        workoutDay = day
+        exerciseNotes = exerciseNotes
     )
 
     fun applyState(state: ActiveWorkoutState, persist: Boolean = true) {
@@ -159,7 +153,7 @@ fun WorkoutScreen(
             val tick = System.currentTimeMillis()
             now = tick
             if (tick >= restUntil) {
-                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 applyState(finishWorkoutRest(snapshot()))
                 break
             }
@@ -190,7 +184,7 @@ fun WorkoutScreen(
             completedSetDetails = completedSets,
             exerciseNotes = exerciseNotes.filterValues { it.isNotBlank() }
         )
-        val streakBefore = remember(log.id) { computeWorkoutStreak(logsBeforeSession) }
+        val streakBefore = remember(log.id) { computeWorkoutStreak(priorLogs) }
         var persistedDone by remember(log.id) { mutableStateOf(false) }
         if (!persistedDone) {
             PostWorkoutExpressiveLoader(
@@ -200,16 +194,14 @@ fun WorkoutScreen(
                 onHome = { persistedDone = true }
             )
         } else {
-            val streakAfter = remember(log.id) { computeWorkoutStreak(mergeCompletedWorkout(logsBeforeSession, log)) }
+            val streakAfter = remember(log.id) { computeWorkoutStreak(priorLogs + log) }
             WorkoutCompletedScreen(
                 day = day,
                 log = log,
                 streakBefore = streakBefore.current,
                 streakAfter = streakAfter.current,
                 isNewStreakRecord = streakAfter.current > streakBefore.best,
-                priorLogs = logsBeforeSession,
-                priorRecords = recordsBeforeSession,
-                currentRecords = currentRecords,
+                priorLogs = priorLogs,
                 onRate = { rating -> onMoodRated(log.id, rating) },
                 onContinue = onHome
             )
@@ -234,6 +226,11 @@ fun WorkoutScreen(
     if ((restState == RestState.RESTING || restState == RestState.PAUSED) && restLeft > 0 && !isPaused) {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
+            topBar = {
+                Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onBack) { Icon(Icons.Rounded.ArrowBack, gs(language, R.string.back)) }
+                }
+            },
             bottomBar = {
                 Column(
                     Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background).navigationBarsPadding().padding(horizontal = 18.dp, vertical = 8.dp)
@@ -256,18 +253,13 @@ fun WorkoutScreen(
                     onRestart = { applyState(setRestDuration(snapshot(), 90)) },
                     onSetDuration = { sec -> applyState(setRestDuration(snapshot(), sec)) },
                     onAdd30 = {
-                        val base = if (restState == RestState.PAUSED) System.currentTimeMillis() + restRemainingMs else restUntil
-                        applyState(snapshot().copy(restUntil = base + 30_000L, restState = RestState.RESTING, restRemainingMs = 0L))
+                        if (restState == RestState.PAUSED) {
+                            applyState(snapshot().copy(restRemainingMs = restRemainingMs + 30_000L))
+                        } else {
+                            applyState(snapshot().copy(restUntil = maxOf(System.currentTimeMillis(), restUntil) + 30_000L))
+                        }
                     }
                 )
-                TextButton(
-                    onClick = onBack,
-                    modifier = Modifier.statusBarsPadding().padding(start = 12.dp, top = 6.dp)
-                ) {
-                    Icon(Icons.Rounded.ArrowBack, gs(language, R.string.back))
-                    Spacer(Modifier.width(4.dp))
-                    Text(gs(language, R.string.back))
-                }
             }
         }
         return
@@ -355,7 +347,7 @@ fun WorkoutScreen(
                     resetKey = "${day.key}:${exercise.id}:$setIndex",
                     enabled = restState == RestState.IDLE && !workoutCompleted && !isPaused && !setCompleting,
                     onComplete = ::completeSet,
-                    isFinalSet = completedSets.size + 1 >= totalSets
+                    isFinalSet = exerciseIndex == day.exercises.lastIndex && setIndex == exercise.sets - 1
                 )
                 Spacer(Modifier.height(9.dp))
                 GymGlowProgressIndicator(
@@ -380,52 +372,34 @@ fun WorkoutScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = onBack, contentPadding = PaddingValues(horizontal = 0.dp)) {
-                        Icon(Icons.Rounded.ArrowBack, gs(language, R.string.back))
-                        Spacer(Modifier.width(4.dp))
-                        Text(gs(language, R.string.back))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) { Icon(Icons.Rounded.ArrowBack, gs(language, R.string.back)) }
+                    FilledTonalButton(onClick = { applyState(if (isPaused) resumeWorkout(snapshot()) else pauseWorkout(snapshot())) }, modifier = Modifier.weight(1f).heightIn(min = 48.dp), contentPadding = PaddingValues(8.dp)) {
+                        Text(gs(language, if (isPaused) R.string.resume else R.string.pause), maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
                     }
-                    Spacer(Modifier.weight(1f))
-                    if (isPaused) {
-                        FilledTonalButton(onClick = { applyState(resumeWorkout(snapshot())) }) {
-                            Text(gs(language, R.string.resume))
-                        }
-                    } else {
-                        TextButton(onClick = { applyState(pauseWorkout(snapshot())) }) {
-                            Text(gs(language, R.string.pause))
-                        }
-                    }
-                    Spacer(Modifier.width(6.dp))
-                    TextButton(onClick = { showNoteEditor = true }) {
-                        Text(gs(language, R.string.note))
-                    }
-                    Spacer(Modifier.width(6.dp))
-                    FilledTonalButton(onClick = { showPlan = true }) { Text(gs(language, R.string.plan)) }
+                    IconButton(onClick = { showNoteEditor = true }, modifier = Modifier.size(48.dp)) { Icon(Icons.Rounded.Edit, gs(language, R.string.note)) }
+                    IconButton(onClick = { showPlan = true }, modifier = Modifier.size(48.dp)) { Icon(Icons.Rounded.List, gs(language, R.string.plan)) }
                 }
             }
             item {
-                AnimatedContent(exerciseIndex, transitionSpec = { effectsMotion() }, label = "workout_exercise") { current ->
-                    val headerExercise = day.exercises[current.coerceIn(day.exercises.indices)]
-                    Column {
-                        Text(
-                            exerciseTitle(headerExercise, language).uppercase(if (language == "EN") Locale.ENGLISH else Locale("ru")),
-                            fontSize = 27.sp,
-                            lineHeight = 31.sp,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            workoutMuscleLine(headerExercise, language),
-                            color = MaterialTheme.colorScheme.primary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                Column {
+                    Text(
+                        exerciseTitle(exercise, language),
+                        fontSize = 27.sp,
+                        lineHeight = 31.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        workoutMuscleLine(exercise, language),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
             item { TechniqueCard(exercise) }
@@ -463,12 +437,15 @@ fun WorkoutScreen(
                     timed = timed
                 )
             }
-            item(key = "exercise_transition") {
-                AnimatedVisibility(transitionMessage != null, enter = expandMotion(), exit = collapseMotion()) {
+            if (transitionMessage != null) {
+                item {
                     Surface(color = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(22.dp)) {
-                        Text(transitionMessage ?: lastTransitionMessage,
+                        Text(
+                            transitionMessage!!,
                             Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                            color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.Medium)
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }

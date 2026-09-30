@@ -4,6 +4,10 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import androidx.compose.animation.core.Animatable
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,7 +28,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -109,10 +112,10 @@ fun TodayScreen(
     val l=profile.appLanguage
     val today=LocalDate.now()
     val workouts=remember(profile) { workoutsFor(profile) }
-    val resumableWorkout = activeState?.let { resolveActiveWorkoutDay(it, workouts) }
     val workoutDaysOfWeek = remember(workouts) { workouts.map { it.dayOfWeek }.toSet() }
     var selectedDay by remember(today) { mutableStateOf(today.dayOfWeek) }
     val todayWorkout=workouts.firstOrNull{it.dayOfWeek==today.dayOfWeek}
+    val resumableWorkout = activeState?.takeUnless { it.workoutCompleted }?.let { state -> workouts.firstOrNull { it.key == state.dayKey } ?: workoutByKey(state.dayKey) }
     val isRestDay = todayWorkout == null
     val selectedWorkout = workouts.firstOrNull { it.dayOfWeek == selectedDay }
     val nextWorkout = workouts
@@ -153,7 +156,10 @@ fun TodayScreen(
         }
     }
     val weekPlanned = profile.trainingDays.size.coerceIn(1, 7).let { if (it == 0) workouts.size.coerceAtLeast(1) else it }
-    val dayTip = remember(today, l, profile.fitnessGoals) { tipForProfile(profile, today) }
+    val tips = remember(l) { gsa(l, R.array.daily_tips).filter(String::isNotBlank).distinct() }
+    var tipOffset by androidx.compose.runtime.saveable.rememberSaveable(today.toEpochDay()) { mutableIntStateOf(0) }
+    val baseTip = remember(today, l, profile.fitnessGoals) { tipForProfile(profile, today) }
+    val dayTip = if (tips.isEmpty()) "" else tips[Math.floorMod(tips.indexOf(baseTip).coerceAtLeast(0) + tipOffset, tips.size)]
 
     if(showProteinSheet) ModalBottomSheet(onDismissRequest={showProteinSheet=false}) {
         Column(Modifier.fillMaxWidth().padding(22.dp).navigationBarsPadding(),verticalArrangement=Arrangement.spacedBy(14.dp)) {
@@ -185,19 +191,13 @@ fun TodayScreen(
 
     LazyColumn(
         Modifier.fillMaxSize().statusBarsPadding().padding(horizontal=18.dp),
-        contentPadding=PaddingValues(top=14.dp,bottom=132.dp),
+        contentPadding=PaddingValues(top=16.dp,bottom=24.dp),
         verticalArrangement=Arrangement.spacedBy(12.dp)
     ) {
-        if (resumableWorkout != null) item {
-            ExpressiveSurfaceButton(onClick = { onOpenWorkout(resumableWorkout) }, modifier = Modifier.fillMaxWidth()) {
-                Text(gs(l, R.string.continue_workout) + " · " + workoutCompactTitle(resumableWorkout, l))
-            }
-        }
-
         item {
             Row(verticalAlignment=Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(gs(l, R.string.app_name),fontSize=30.sp,fontWeight=FontWeight.Bold)
+                    Text("GymFlow",fontSize=30.sp,fontWeight=FontWeight.Bold, maxLines=1)
                     Text(dateLabel(today,l),color=MaterialTheme.colorScheme.onSurfaceVariant,fontSize=14.sp)
                     val homeLevel = remember(logs, records) { computeLevel(computeTotalXp(logs, records)) }
                     Text(
@@ -206,11 +206,13 @@ fun TodayScreen(
                         fontSize = 12.sp
                     )
                 }
-                if (streak.current > 0) StreakBadge(streak.current)
-                Spacer(Modifier.width(6.dp))
-                IconButton(onClick=onOpenSettings){Icon(Icons.Rounded.Settings,gs(l, R.string.settings))}
-                Spacer(Modifier.width(2.dp))
-                AvatarButton(profile,onOpenProfile)
+                Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick=onOpenSettings){Icon(Icons.Rounded.Settings,gs(l, R.string.settings))}
+                        AvatarButton(profile,onOpenProfile)
+                    }
+                    MotionStreakBadge(streak.current, active = workoutDoneToday)
+                }
             }
         }
         item {
@@ -222,6 +224,21 @@ fun TodayScreen(
             )
         }
         // TODAY: training day vs rest day
+        resumableWorkout?.let { day ->
+            item {
+                ExpressiveSurfaceButton(onClick = { onOpenWorkout(day) }, modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp, 12.dp)) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Rounded.PlayArrow, null, Modifier.size(24.dp))
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(gs(l, R.string.continue_workout), fontWeight = FontWeight.Bold, maxLines = 2)
+                            Text(workoutCompactTitle(day, l), color = MaterialTheme.colorScheme.onPrimaryContainer, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                        }
+                        Icon(Icons.Rounded.ChevronRight, null)
+                    }
+                }
+            }
+        }
         if (todayWorkout != null) {
             item {
                 ExpressiveCard(Modifier.fillMaxWidth(), containerColor = MaterialTheme.colorScheme.primaryContainer, corner = 26.dp) {
@@ -251,7 +268,6 @@ fun TodayScreen(
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = .75f),
                             fontSize = 13.sp
                         )
-                        Spacer(Modifier.height(2.dp))
                         if (!workoutDoneToday || activeState?.dayKey == todayWorkout.key) {
                             ExpressiveSurfaceButton(
                                 onClick = { onOpenWorkout(todayWorkout) },
@@ -283,6 +299,7 @@ fun TodayScreen(
                         )
                         nextWorkout?.let { next ->
                             val eta = daysUntil(today.dayOfWeek, next.dayOfWeek).let { if (it == 0) 7 else it }
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
                                 gs(l, R.string.next_workout_in_days, dayShort(next.dayOfWeek, l), eta),
                                 fontWeight = FontWeight.SemiBold,
@@ -293,6 +310,7 @@ fun TodayScreen(
                                 color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = .75f),
                                 fontSize = 13.sp
                             )
+                            }
                         }
                         if (workouts.isEmpty()) {
                             Text(gs(l, R.string.no_workouts_yet), color = MaterialTheme.colorScheme.onSecondaryContainer, fontSize = 13.sp)
@@ -412,7 +430,7 @@ fun TodayScreen(
         }
         item { SectionTitle(gs(l, R.string.try_today)) }
         item { NutritionSuggestionCard(l, compact = true) }
-        if (dayTip.isNotBlank()) item { TipOfDayCard(gs(l, R.string.tip_of_the_day), dayTip) }
+        if (dayTip.isNotBlank()) item { TipOfDayCard(gs(l, R.string.tip_of_the_day), dayTip, l) { if (tips.size > 1) tipOffset = (tipOffset + 1) % tips.size } }
         if(goals.isNotEmpty()) item { DailyInsightCard(gs(l, R.string.goal),goals[(today.dayOfYear%goals.size)].let{"${it.title} — ${it.value} ${it.unit}"},Icons.Rounded.Flag) }
         if(records.isNotEmpty()) item { DailyInsightCard(gs(l, R.string.record),records[(today.dayOfYear%records.size)].let{"${it.title} — ${it.value} ${it.unit}"},Icons.Rounded.EmojiEvents) }
         item { DailyInsightCard(gs(l, R.string.motivation),dailyMotivation(profile,today),Icons.Rounded.Bolt) }
@@ -449,13 +467,6 @@ private fun WeeklyProgressCard(done: Int, planned: Int, streakDays: Int, l: Stri
                     modifier = Modifier.weight(1f)
                 )
                 Text("$pct%", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            if (streakDays > 0) {
-                Text(
-                    "🔥 ${gs(l, R.string.streak_days_count, streakDays)}",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
         }
     }
@@ -591,7 +602,9 @@ private fun ActivityCalendarCard(logs: List<WorkoutLog>, l: String) {
     }
 }
 
-@Composable private fun StreakBadge(days: Int) { MotionStreakBadge(days) }
+@Composable private fun StreakBadge(days: Int) {
+    MotionStreakBadge(days)
+}
 
 @Composable private fun TodayProgressRow(done: Int, total: Int, label: String) {
     ExpressiveCard(Modifier.fillMaxWidth(), corner = 20.dp) {
@@ -647,15 +660,20 @@ private fun ActivityCalendarCard(logs: List<WorkoutLog>, l: String) {
     }
 }
 
-@Composable private fun TipOfDayCard(title: String, tip: String) {
+@Composable private fun TipOfDayCard(title: String, tip: String, l: String, onRefresh: ()->Unit) {
     ExpressiveCard(Modifier.fillMaxWidth(), corner = 20.dp) {
-        Row(verticalAlignment = Alignment.Top) {
-            Icon(Icons.Rounded.Lightbulb, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-            Spacer(Modifier.width(10.dp))
-            Column {
-                Text(title, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                Spacer(Modifier.height(2.dp))
-                Text(tip, fontSize = 13.sp, lineHeight = 18.sp)
+        Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.primaryContainer) {
+                Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) { Icon(Icons.Rounded.Lightbulb, null, Modifier.size(20.dp)) }
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text(tip, fontSize = 15.sp, lineHeight = 22.sp)
+                TextButton(onClick = onRefresh, modifier = Modifier.heightIn(min = 48.dp)) {
+                    Icon(Icons.Rounded.Refresh, null, Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(if (l == "EN") "Another recommendation" else "Другая рекомендация", maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                }
             }
         }
     }
@@ -668,15 +686,29 @@ private fun ActivityCalendarCard(logs: List<WorkoutLog>, l: String) {
     }
 }
 
-@Composable private fun StatsSummaryRow(logs: List<WorkoutLog>) {
+@Composable private fun StatsSummaryRow(logs: List<WorkoutLog>, records: List<PersonalRecord>) {
     val l = LocalAppLanguage.current
     val streak = remember(logs) { computeWorkoutStreak(logs) }
     val volume = remember(logs) { computeTotalVolumeKg(logs) }
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        ProfileStatChip(Modifier.weight(1f), "🔥", "${streak.current}", gs(l, R.string.day_streak))
-        ProfileStatChip(Modifier.weight(1f), null, "${streak.best}", gs(l, R.string.best_streak))
-        ProfileStatChip(Modifier.weight(1f), null, "${logs.size}", gs(l, R.string.workouts_count_label))
-        ProfileStatChip(Modifier.weight(1f), null, gs(l, R.string.volume_kg_format, volume.roundToInt().toString()), gs(l, R.string.total_volume))
+    val stats = listOf(
+        logs.size.toString() to gs(l, R.string.workouts_count_label),
+        streak.best.toString() to gs(l, R.string.best_streak),
+        gs(l, R.string.volume_kg_format, volume.roundToInt().toString()) to gs(l, R.string.total_volume),
+        records.size.toString() to gs(l, R.string.record)
+    )
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        stats.chunked(2).forEach { row ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                row.forEach { (value, label) ->
+                    Surface(Modifier.weight(1f), shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(value, fontSize = 24.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                            Text(label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, minLines = 2, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -772,12 +804,11 @@ private fun RecapStatChip(modifier: Modifier, label: String, value: String) {
     Surface(modifier = modifier, shape = RoundedCornerShape(14.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
         Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(value, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-            Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            Text(label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, minLines = 2, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgressScreen(
     entries: List<ProgressEntry>,
@@ -811,9 +842,9 @@ fun ProgressScreen(
     if(showGoal) GoalSheet(l,editGoal,{showGoal=false;editGoal=null}){onUpsertGoal(it);showGoal=false;editGoal=null}
     if(showRecord) RecordSheet(l,editRecord,{showRecord=false;editRecord=null}){onUpsertRecord(it);showRecord=false;editRecord=null}
 
-    LazyColumn(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal=18.dp),contentPadding=PaddingValues(top=18.dp,bottom=132.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
+    LazyColumn(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal=18.dp),contentPadding=PaddingValues(top=18.dp,bottom=24.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
         item { Row(verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(gs(l, R.string.measurements),fontSize=32.sp,fontWeight=FontWeight.Bold);Text(gs(l, R.string.body_goals_and_workout_history),color=MaterialTheme.colorScheme.onSurfaceVariant)};IconButton(onClick={showMeasurement=true}){Icon(Icons.Rounded.Add,gs(l, R.string.add))}} }
-        item { StatsSummaryRow(logs) }
+        item { StatsSummaryRow(logs, records) }
         item {
             val weekGoal = profile.trainingDays.size.coerceIn(1, 7).let { if (it == 0) 3 else it }
             val today = LocalDate.now()
@@ -825,7 +856,7 @@ fun ProgressScreen(
                     !d.isBefore(weekStart) && !d.isAfter(weekEnd)
                 }
             }
-            WeeklyProgressCard(done, weekGoal, computeWorkoutStreak(logs).current, l)
+            WeeklyProgressCard(done, weekGoal, 0, l)
         }
         item { SectionTitle(gs(l, R.string.activity_calendar)) }
         item { ActivityCalendarCard(logs, l) }
@@ -846,21 +877,21 @@ fun ProgressScreen(
                     }
                 }
             }
-            items(entries.take(8),key={"measurement:${it.id}"}) { e -> MeasurementRow(e,l,motionItemModifier()){onDeleteEntry(e.id)} }
+            items(entries.take(8),key={it.id}) { e -> MeasurementRow(e,l){onDeleteEntry(e.id)} }
         }
         item { Row(verticalAlignment=Alignment.CenterVertically){SectionTitle(gs(l, R.string.goals));Spacer(Modifier.weight(1f));IconButton(onClick={editGoal=null;showGoal=true}){Icon(Icons.Rounded.Add,gs(l, R.string.create_goal))}} }
         if(goals.isEmpty()) item{CompactEmpty(Icons.Rounded.Flag,gs(l, R.string.no_goals_yet),gs(l, R.string.create_a_goal_with_a_name_value_and_unit),gs(l, R.string.create_goal)){showGoal=true}}
-        else items(goals,key={"goal:${it.id}"}){g->EditableValueCard(g.title,"${g.value} ${g.unit}",Icons.Rounded.Flag,{editGoal=g;showGoal=true},{onDeleteGoal(g.id)},modifier=motionItemModifier())}
+        else items(goals,key={it.id}){g->EditableValueCard(g.title,"${g.value} ${g.unit}",Icons.Rounded.Flag,{editGoal=g;showGoal=true},{onDeleteGoal(g.id)})}
         item { Row(verticalAlignment=Alignment.CenterVertically){SectionTitle(gs(l, R.string.personal_records));Spacer(Modifier.weight(1f));IconButton(onClick={editRecord=null;showRecord=true}){Icon(Icons.Rounded.Add,gs(l, R.string.add_record))}} }
         if(records.isEmpty()) item{CompactEmpty(Icons.Rounded.EmojiEvents,gs(l, R.string.no_records_yet),gs(l, R.string.add_your_current_personal_record),gs(l, R.string.add_record)){showRecord=true}}
-        else items(records,key={"record:${it.id}"}){r->EditableValueCard(r.title,"${r.value} ${r.unit}",Icons.Rounded.EmojiEvents,{editRecord=r;showRecord=true},{onDeleteRecord(r.id)},modifier=motionItemModifier())}
+        else items(records,key={it.id}){r->EditableValueCard(r.title,"${r.value} ${r.unit}",Icons.Rounded.EmojiEvents,{editRecord=r;showRecord=true},{onDeleteRecord(r.id)})}
         item { SectionTitle(gs(l, R.string.muscle_load)) }
         item { MuscleLoadCard(logs,profile) }
         item { SectionTitle(gs(l, R.string.exercise_history)) }
         item { ExerciseHistoryPanel(logs = logs, profile = profile, records = records) }
         item { SectionTitle(gs(l, R.string.workout_history)) }
         if(logs.isEmpty()) item{CompactEmpty(Icons.Rounded.History,gs(l, R.string.no_workouts_yet),gs(l, R.string.finish_your_first_workout_to_see_history),"",{})}
-        else items(logs,key={"workout:${it.id}"}){log->WorkoutHistoryRow(log,profile,modifier=motionItemModifier(),onDelete={onDeleteLog(log.id)},onRepeat={
+        else items(logs,key={it.id}){log->WorkoutHistoryRow(log,profile,onDelete={onDeleteLog(log.id)},onRepeat={
             workoutDayFromLog(log, profile, l)?.let(onOpenWorkout)
         },onSaveTemplate={
             val name = log.title.ifBlank { gs(l, R.string.workout) }
@@ -870,10 +901,10 @@ fun ProgressScreen(
         if (templates.isEmpty()) {
             item { Text(gs(l, R.string.no_templates_yet), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp) }
         } else {
-            items(templates, key = { "template:${it.id}" }) { tm ->
+            items(templates, key = { it.id }) { tm ->
                 var renaming by remember(tm.id) { mutableStateOf(false) }
                 var nameDraft by remember(tm.id, tm.name) { mutableStateOf(tm.name) }
-                ExpressiveCard(motionItemModifier().fillMaxWidth()) {
+                ExpressiveCard(Modifier.fillMaxWidth()) {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (renaming) {
                             OutlinedTextField(
@@ -1010,34 +1041,33 @@ private fun metricOptions(l:String)=listOf("WEIGHT" to gs(l, R.string.weight),"H
 private fun metricValue(e:ProgressEntry,k:String):Double?=when(k){"WEIGHT"->e.weightKg;"HEIGHT"->e.heightCm;"CHEST"->e.chestCm;"WAIST"->e.waistCm;"BICEPS"->e.upperArmCm;"THIGH"->e.thighCm;else->null}
 private fun fmt(v:Double)=if(v%1.0==0.0)v.toInt().toString() else "%.1f".format(v)
 
-@Composable private fun MetricChart(entries:List<ProgressEntry>,metric:String) {
-    val values = remember(entries, metric) { entries.sortedBy { it.createdAt }.mapNotNull { metricValue(it, metric) }.takeLast(20) }
-    val reveal = remember { androidx.compose.animation.core.Animatable(1f) }
-    LaunchedEffect(values, metric) {
-        reveal.snapTo(0f)
-        reveal.animateTo(1f, GymGlowMotion.progress())
+@Composable private fun MetricChart(entries: List<ProgressEntry>, metric: String) {
+    val values = remember(entries, metric) { entries.sortedBy { it.createdAt }.mapNotNull { metricValue(it, metric) }.filter { it.isFinite() }.takeLast(20) }
+    if (values.size < 2) { Text(gs(LocalAppLanguage.current, R.string.add_one_more_measurement_for_a_chart), color = MaterialTheme.colorScheme.onSurfaceVariant); return }
+    val reveal = remember(metric) { Animatable(0f) }
+    LaunchedEffect(metric) { reveal.animateTo(1f, GymGlowMotion.defaultEffects()) }
+    val bounds = remember(values) {
+        val minimum = values.minOrNull()!!
+        minimum to ((values.maxOrNull()!! - minimum).takeIf { it > .001 } ?: 1.0)
     }
-    if(values.size<2){Text(gs(LocalAppLanguage.current, R.string.add_one_more_measurement_for_a_chart),color=MaterialTheme.colorScheme.onSurfaceVariant);return}
-    val points = remember(values) {
-        val low = values.minOrNull() ?: 0.0
-        val high = values.maxOrNull() ?: 1.0
-        val span = (high - low).takeIf { it > .001 } ?: 1.0
-        values.mapIndexed { index, value ->
-            Offset(index.toFloat() / values.lastIndex.coerceAtLeast(1), (1.0 - ((value - low) / span * .82 + .09)).toFloat())
-        }
-    }
-    val lineColor=MaterialTheme.colorScheme.primary
-    val grid=MaterialTheme.colorScheme.outlineVariant
+    val lineColor = MaterialTheme.colorScheme.primary
+    val grid = MaterialTheme.colorScheme.outlineVariant
     Canvas(Modifier.fillMaxWidth().height(150.dp)) {
-        for(i in 1..3){val y=size.height*i/4f;drawLine(grid,Offset(0f,y),Offset(size.width,y),strokeWidth=1f)}
+        for (i in 1..3) { val y = size.height * i / 4f; drawLine(grid, Offset(0f, y), Offset(size.width, y), strokeWidth = 1f) }
+        // Read animation only in the draw phase; grid and surrounding UI remain static.
         clipRect(right = size.width * reveal.value) {
-        var last:Offset?=null
-        points.forEach { point -> val p=Offset(point.x * size.width, point.y * size.height);last?.let{drawLine(lineColor,it,p,strokeWidth=5f,cap=StrokeCap.Round)};drawCircle(lineColor,6f,p);last=p }
+            var last: Offset? = null
+            values.forEachIndexed { i, v ->
+                val p = Offset(size.width * i / values.lastIndex.toFloat(), size.height - ((v - bounds.first) / bounds.second * size.height * .82 + size.height * .09).toFloat())
+                last?.let { drawLine(lineColor, it, p, strokeWidth = 5f, cap = StrokeCap.Round) }
+                drawCircle(lineColor, 6f, p)
+                last = p
+            }
         }
     }
 }
 
-@Composable private fun MeasurementRow(e:ProgressEntry,l:String,modifier:Modifier=Modifier,onDelete:()->Unit){ExpressiveCard(modifier.fillMaxWidth()){Row(verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(millisDate(e.createdAt,l),fontWeight=FontWeight.Bold);Text(listOfNotNull(e.weightKg?.let{"${fmt(it)} ${gs(l, R.string.kg)}"},e.heightCm?.let{"${fmt(it)} ${gs(l, R.string.cm)}"},e.chestCm?.let{"${gs(l, R.string.chest_73481ed)} ${fmt(it)}"},e.waistCm?.let{"${gs(l, R.string.waist_0e51ebf)} ${fmt(it)}"}).joinToString(" • "),color=MaterialTheme.colorScheme.onSurfaceVariant,fontSize=13.sp)};IconButton(onClick=onDelete){Icon(Icons.Rounded.Delete,gs(l, R.string.delete))}}}}
+@Composable private fun MeasurementRow(e:ProgressEntry,l:String,onDelete:()->Unit){ExpressiveCard(Modifier.fillMaxWidth()){Row(verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(millisDate(e.createdAt,l),fontWeight=FontWeight.Bold);Text(listOfNotNull(e.weightKg?.let{"${fmt(it)} ${gs(l, R.string.kg)}"},e.heightCm?.let{"${fmt(it)} ${gs(l, R.string.cm)}"},e.chestCm?.let{"${gs(l, R.string.chest_73481ed)} ${fmt(it)}"},e.waistCm?.let{"${gs(l, R.string.waist_0e51ebf)} ${fmt(it)}"}).joinToString(" • "),color=MaterialTheme.colorScheme.onSurfaceVariant,fontSize=13.sp)};IconButton(onClick=onDelete){Icon(Icons.Rounded.Delete,gs(l, R.string.delete))}}}}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -1089,9 +1119,9 @@ private fun MeasurementSheet(l: String, onDismiss: () -> Unit, onSave: (Progress
 @Composable private fun RecordSheet(l:String,current:PersonalRecord?,onDismiss:()->Unit,onSave:(PersonalRecord)->Unit){var title by remember(current){mutableStateOf(current?.title.orEmpty())};var value by remember(current){mutableStateOf(current?.value.orEmpty())};var unit by remember(current){mutableStateOf(current?.unit.orEmpty())};ModalBottomSheet(onDismissRequest=onDismiss){ValueEditor(l,gs(l, R.string.personal_record),title,{title=it},value,{value=it},unit,{unit=it},onDismiss){if(title.isNotBlank()&&value.isNotBlank())onSave(PersonalRecord(current?.id?:System.currentTimeMillis(),title.trim(),value.trim(),unit.trim(),System.currentTimeMillis()))}}}
 @Composable private fun ValueEditor(l:String,heading:String,title:String,setTitle:(String)->Unit,value:String,setValue:(String)->Unit,unit:String,setUnit:(String)->Unit,onDismiss:()->Unit,onSave:()->Unit){Column(Modifier.fillMaxWidth().padding(20.dp).navigationBarsPadding(),verticalArrangement=Arrangement.spacedBy(10.dp)){Text(heading,fontSize=24.sp,fontWeight=FontWeight.Bold);OutlinedTextField(title,setTitle,Modifier.fillMaxWidth(),label={Text(gs(l, R.string.name))},shape=RoundedCornerShape(20.dp));OutlinedTextField(value,setValue,Modifier.fillMaxWidth(),label={Text(gs(l, R.string.value_label))},shape=RoundedCornerShape(20.dp));OutlinedTextField(unit,setUnit,Modifier.fillMaxWidth(),label={Text(gs(l, R.string.unit))},shape=RoundedCornerShape(20.dp));ExpressiveSurfaceButton(onSave,Modifier.fillMaxWidth(),enabled=title.isNotBlank()&&value.isNotBlank()){Text(gs(l, R.string.save),fontWeight=FontWeight.Bold)}}}
 
-@Composable private fun EditableValueCard(title:String,value:String,icon:androidx.compose.ui.graphics.vector.ImageVector,onEdit:()->Unit,onDelete:()->Unit,modifier:Modifier=Modifier){
+@Composable private fun EditableValueCard(title:String,value:String,icon:androidx.compose.ui.graphics.vector.ImageVector,onEdit:()->Unit,onDelete:()->Unit){
     val l=LocalAppLanguage.current
-    ExpressiveCard(modifier.fillMaxWidth()){Row(verticalAlignment=Alignment.CenterVertically){Icon(icon,null);Spacer(Modifier.width(12.dp));Column(Modifier.weight(1f)){Text(title,fontWeight=FontWeight.Bold);Text(value,color=MaterialTheme.colorScheme.onSurfaceVariant)};IconButton(onClick=onEdit){Icon(Icons.Rounded.Edit,gs(l, R.string.edit))};IconButton(onClick=onDelete){Icon(Icons.Rounded.Delete,gs(l, R.string.delete))}}}
+    ExpressiveCard(Modifier.fillMaxWidth()){Row(verticalAlignment=Alignment.CenterVertically){Icon(icon,null);Spacer(Modifier.width(12.dp));Column(Modifier.weight(1f)){Text(title,fontWeight=FontWeight.Bold);Text(value,color=MaterialTheme.colorScheme.onSurfaceVariant)};IconButton(onClick=onEdit){Icon(Icons.Rounded.Edit,gs(l, R.string.edit))};IconButton(onClick=onDelete){Icon(Icons.Rounded.Delete,gs(l, R.string.delete))}}}
 }
 @Composable private fun CompactEmpty(icon:androidx.compose.ui.graphics.vector.ImageVector,title:String,text:String,action:String,onClick:()->Unit){ExpressiveCard(Modifier.fillMaxWidth()){Row(verticalAlignment=Alignment.CenterVertically){Surface(shape=CircleShape,color=MaterialTheme.colorScheme.secondaryContainer){Box(Modifier.size(46.dp),contentAlignment=Alignment.Center){Icon(icon,null)}};Spacer(Modifier.width(12.dp));Column(Modifier.weight(1f)){Text(title,fontWeight=FontWeight.Bold);Text(text,color=MaterialTheme.colorScheme.onSurfaceVariant,fontSize=13.sp);if(action.isNotBlank())TextButton(onClick=onClick,contentPadding=PaddingValues(0.dp)){Text(action)}}}}}
 
@@ -1119,13 +1149,12 @@ private fun MeasurementSheet(l: String, onDismiss: () -> Unit, onSave: (Progress
     profile: UserProfile,
     onDelete: () -> Unit,
     onRepeat: () -> Unit = {},
-    onSaveTemplate: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onSaveTemplate: () -> Unit = {}
 ) {
     val l = profile.appLanguage
     val day = workoutsFor(profile).firstOrNull { it.key == log.dayKey } ?: workoutByKey(log.dayKey)
     val title = day?.let { workoutCompactTitle(it, l) } ?: log.title
-    ExpressiveCard(modifier.fillMaxWidth()) {
+    ExpressiveCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
@@ -1160,7 +1189,6 @@ fun ProfileScreen(
     progress: List<ProgressEntry> = emptyList()
 ) {
     val l = profile.appLanguage
-    val memberSince = remember(logs, progress, l) { memberSinceLabel(logs, progress, l) }
     var editing by remember { mutableStateOf(false) }
     var showBirthWheel by remember { mutableStateOf(false) }
     var showFullAvatar by remember { mutableStateOf(false) }
@@ -1356,6 +1384,7 @@ fun ProfileScreen(
                 Text(birthLabel, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
             }
         }
+        val memberSince = memberSinceLabel(logs, progress, l)
         if (memberSince != null) item {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 4.dp),
@@ -1398,10 +1427,10 @@ private fun memberSinceLabel(logs: List<WorkoutLog>, progress: List<ProgressEntr
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (emoji != null) { Text(emoji, fontSize = 14.sp); Spacer(Modifier.width(3.dp)) }
-                Text(value, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                Text(value, fontWeight = FontWeight.Bold, fontSize = 24.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             }
             Spacer(Modifier.height(2.dp))
-            Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            Text(label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, minLines = 2, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
         }
     }
 }

@@ -14,9 +14,13 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.selected
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -72,11 +76,10 @@ private fun GymFlowRoot() {
     var goals by remember { mutableStateOf<List<GoalEntry>>(emptyList()) }
     var records by remember { mutableStateOf<List<PersonalRecord>>(emptyList()) }
     var templates by remember { mutableStateOf(store.loadTemplates()) }
-    var dataReady by remember { mutableStateOf(false) }
     var mutationEpoch by remember { mutableIntStateOf(0) }
     var activeState by remember { mutableStateOf(store.loadActiveWorkout()) }
     var activeWorkout by remember {
-        mutableStateOf(activeState?.let { state -> resolveActiveWorkoutDay(state, workoutsFor(profile)) })
+        mutableStateOf(activeState?.let { state -> workoutsFor(profile).firstOrNull { it.key == state.dayKey } ?: workoutByKey(state.dayKey) })
     }
     var showSettings by rememberSaveable { mutableStateOf(false) }
     var showProfile by rememberSaveable { mutableStateOf(false) }
@@ -100,7 +103,6 @@ private fun GymFlowRoot() {
             goals = loaded.goals
             records = loaded.records
         }
-        dataReady = true
     }
 
     BackHandler(enabled = activeWorkout != null || showSettings || showProfile) {
@@ -197,7 +199,7 @@ private fun GymFlowRoot() {
                     templates = backup.templates
                     activeState = backup.activeWorkout
                     primeWorkoutPlanCache(profile, backup.trainingPlan)
-                    activeWorkout = activeState?.let { state -> resolveActiveWorkoutDay(state, backup.trainingPlan) }
+                    activeWorkout = activeState?.let { state -> backup.trainingPlan.firstOrNull { it.key == state.dayKey } ?: workoutByKey(state.dayKey) }
                     if (profile.notificationsEnabled && profile.measurementNotifications && profile.monthlyCheckInEnabled && profile.nextMonthlyCheckInAt > 0) ensureMonthlyCheckInScheduled(context, profile) else cancelMonthlyCheckIn(context)
                     if (profile.notificationsEnabled) scheduleDailyGymFlowReminders(context) else cancelDailyGymFlowReminders(context)
                     Toast.makeText(context, gs(profile.appLanguage, R.string.gymflow_data_restored), Toast.LENGTH_SHORT).show()
@@ -219,16 +221,14 @@ private fun GymFlowRoot() {
     GymFlowTheme(profile.themeMode,profile.colorStyle,profile.appLanguage,profile.fontScale) {
         Surface(Modifier.fillMaxSize(),color=MaterialTheme.colorScheme.background) {
             val rootScreen=when {
-                !dataReady -> "loading"
                 !profile.onboardingCompleted -> "onboarding"
                 activeWorkout!=null -> "workout:${activeWorkout?.key}"
                 showSettings -> "settings"
                 showProfile -> "profile"
                 else -> "main"
             }
-            AnimatedContent(targetState=rootScreen,transitionSpec={if(initialState=="loading" || targetState=="loading" || initialState=="onboarding" || targetState=="onboarding") effectsMotion() else directionalMotion(targetState!="main")},label="root_transition") { screen ->
+            AnimatedContent(targetState=rootScreen,transitionSpec={directionalMotion(targetState != "main")},label="root_transition") { screen ->
                 when {
-                    screen=="loading" -> Box(Modifier.fillMaxSize(), contentAlignment=Alignment.Center) { GymFlowMorphingShape(Modifier.size(96.dp)) }
                     screen=="onboarding" -> OnboardingV2(initial=profile,onImport={importLauncher.launch(arrayOf("application/json","text/plain","*/*"))}) { updated,weight,height,plan ->
                         mutationEpoch++
                         val now = System.currentTimeMillis()
@@ -247,8 +247,8 @@ private fun GymFlowRoot() {
                         scheduleDailyGymFlowReminders(context)
                     }
                     screen.startsWith("workout:") -> {
-                        val day=activeWorkout?.takeIf { it.key==screen.substringAfter("workout:") }?:activeState?.takeIf { it.dayKey==screen.substringAfter("workout:") }?.let { resolveActiveWorkoutDay(it, workoutsFor(profile)) }?:workoutsFor(profile).firstOrNull{it.key==screen.substringAfter("workout:")}?:workoutByKey(screen.substringAfter("workout:"))
-                        if(day!=null) WorkoutScreen(day=day,storedState=activeState?.takeIf{it.dayKey==day.key},onStateChanged={activeState=it;store.saveActiveWorkout(it)},onBack={activeWorkout=null},priorLogs=logs,currentRecords=records,onFinished={log,setStage->
+                        val day=activeWorkout?:workoutsFor(profile).firstOrNull{it.key==screen.substringAfter("workout:")}?:workoutByKey(screen.substringAfter("workout:"))
+                        if(day!=null) WorkoutScreen(day=day,storedState=activeState?.takeIf{it.dayKey==day.key},onStateChanged={activeState=it;store.saveActiveWorkout(it)},onBack={activeWorkout=null},priorLogs=logs,onFinished={log,setStage->
                             mutationEpoch++
                             setStage(0)
                             val persistedLogs = withContext(Dispatchers.IO) { store.loadWorkoutLogs() }
@@ -286,7 +286,9 @@ private fun GymFlowRoot() {
                     else -> MainTabs(
                         profile=profile,tab=tab,onTab={tab=it},activeState=activeState,logs=logs,nutrition=nutrition,progress=progress,goals=goals,records=records,
                         templates=templates,
-                        onTemplatesChange={ updated -> templates=updated; store.saveTemplates(updated) },
+                        onSaveTemplate={tm->val next=(listOf(tm)+templates.filterNot{it.id==tm.id}).sortedByDescending{it.createdAt};templates=next;store.saveTemplates(next)},
+                        onDeleteTemplate={id->val next=templates.filterNot{it.id==id};templates=next;store.saveTemplates(next)},
+                        onRenameTemplate={id,name->val next=templates.map{if(it.id==id)it.copy(name=name)else it};templates=next;store.saveTemplates(next)},
                         onOpenSettings={showSettings=true},onOpenProfile={showProfile=true},onOpenWorkout={activeWorkout=it},onAddNutrition=::addNutritionEntry,onOpenMeasurements={tab=1},
                         onAddProgress=::addProgressEntry,onDeleteProgress={id->progress=progress.filterNot{it.id==id};store.saveProgress(progress)},onDeleteLog={id->logs=logs.filterNot{it.id==id};store.saveWorkoutLogs(logs)},
                         onUpsertGoal=::upsertGoal,onDeleteGoal={id->goals=goals.filterNot{it.id==id};store.saveGoals(goals)},onUpsertRecord=::upsertRecord,onDeleteRecord={id->records=records.filterNot{it.id==id};store.saveRecords(records)},
@@ -301,7 +303,7 @@ private fun GymFlowRoot() {
 @Composable
 private fun MainTabs(
     profile:UserProfile,tab:Int,onTab:(Int)->Unit,activeState:ActiveWorkoutState?,logs:List<WorkoutLog>,nutrition:List<NutritionEntry>,progress:List<ProgressEntry>,goals:List<GoalEntry>,records:List<PersonalRecord>,
-    templates:List<WorkoutTemplate>,onTemplatesChange:(List<WorkoutTemplate>)->Unit,
+    templates:List<WorkoutTemplate>,onSaveTemplate:(WorkoutTemplate)->Unit,onDeleteTemplate:(Long)->Unit,onRenameTemplate:(Long,String)->Unit,
     onOpenSettings:()->Unit,onOpenProfile:()->Unit,onOpenWorkout:(WorkoutDay)->Unit,onAddNutrition:(NutritionEntry)->Unit,onOpenMeasurements:()->Unit,
     onAddProgress:(ProgressEntry)->Unit,onDeleteProgress:(Long)->Unit,onDeleteLog:(Long)->Unit,onUpsertGoal:(GoalEntry)->Unit,onDeleteGoal:(Long)->Unit,onUpsertRecord:(PersonalRecord)->Unit,onDeleteRecord:(Long)->Unit,onSnooze:()->Unit,onDeleteNutrition:(Long)->Unit,onProfileChange:(UserProfile)->Unit
 ) {
@@ -314,30 +316,16 @@ private fun MainTabs(
             Surface(modifier=Modifier.align(Alignment.CenterHorizontally),color=MaterialTheme.colorScheme.surfaceVariant.copy(alpha=.96f),shape=RoundedCornerShape(38.dp),tonalElevation=3.dp) {
                 Row(Modifier.padding(horizontal=7.dp,vertical=7.dp),horizontalArrangement=Arrangement.spacedBy(6.dp),verticalAlignment=Alignment.CenterVertically) {
                     val items=listOf(Triple(gs(profile.appLanguage, R.string.today_8dd7bf1),Icons.Rounded.Home,0),Triple(gs(profile.appLanguage, R.string.measurements),Icons.Rounded.Straighten,1),Triple(gs(profile.appLanguage, R.string.nutrition_294139b),Icons.Rounded.Restaurant,2),Triple(gs(profile.appLanguage, R.string.music_df4392a),Icons.Rounded.LibraryMusic,3))
-                    items.forEach { (label, icon, index) ->
-                        val isSelected = tab == index
-                        val container by animateColorAsState(
-                            if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                            GymGlowMotion.defaultEffects(), label = "nav_selection"
-                        )
-                        Surface(color = container, shape = RoundedCornerShape(24.dp)) {
-                            IconButton(onClick = { onTab(index) }, modifier = Modifier
-                                .size(width = 58.dp, height = 50.dp)
-                                .semantics { selected = isSelected }) {
-                                Icon(icon, label, Modifier.size(24.dp).then(if (index == 1) Modifier.rotate(-45f) else Modifier),
-                                    tint = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        }
-                    }
+                    items.forEach{(label,icon,index)->val width by animateDpAsState(if(tab==index)72.dp else 50.dp,GymGlowMotion.fastSpatial(),label="nav_width");Surface(color=if(tab==index)MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,shape=RoundedCornerShape(if(tab==index)24.dp else 18.dp)){IconButton(onClick={onTab(index)},modifier=Modifier.size(width=width,height=50.dp)){Icon(icon,label,Modifier.size(24.dp).then(if(index==1)Modifier.rotate(-45f)else Modifier),tint=if(tab==index)MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant)}}}
                 }
             }
         }
     }) { innerPadding ->
         Box(Modifier.fillMaxSize().padding(innerPadding)) {
-            AnimatedContent(targetState=tab,transitionSpec={directionalMotion(targetState>initialState, GymGlowMotion.TabTravelDivisor)},label="tab_transition") { current ->
+            AnimatedContent(targetState=tab,transitionSpec={directionalMotion(targetState > initialState, GymGlowMotion.TabTravelDivisor)},label="tab_transition") { current ->
                 when(current) {
                     0 -> TodayScreen(activeState,logs,profile,nutrition,progress,goals,records,onOpenSettings,onOpenProfile,onOpenWorkout,onAddNutrition,onOpenMeasurements)
-                    1 -> ProgressScreen(progress,logs,profile,goals,records,onAddProgress,onDeleteProgress,onDeleteLog,onUpsertGoal,onDeleteGoal,onUpsertRecord,onDeleteRecord,onSnooze,onOpenWorkout=onOpenWorkout,templates=templates,onSaveTemplate={tm->val next=(listOf(tm)+templates.filterNot{it.id==tm.id}).sortedByDescending{it.createdAt};onTemplatesChange(next)},onDeleteTemplate={id->val next=templates.filterNot{it.id==id};onTemplatesChange(next)},onRenameTemplate={id,name->val next=templates.map{if(it.id==id)it.copy(name=name)else it};onTemplatesChange(next)})
+                    1 -> ProgressScreen(progress,logs,profile,goals,records,onAddProgress,onDeleteProgress,onDeleteLog,onUpsertGoal,onDeleteGoal,onUpsertRecord,onDeleteRecord,onSnooze,onOpenWorkout=onOpenWorkout,templates=templates,onSaveTemplate=onSaveTemplate,onDeleteTemplate=onDeleteTemplate,onRenameTemplate=onRenameTemplate)
                     2 -> NutritionScreen(profile,progress,nutrition,onAddNutrition,onDeleteNutrition,onProfileChange)
                     else -> PlayerScreen()
                 }

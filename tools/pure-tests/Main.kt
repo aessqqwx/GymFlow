@@ -198,7 +198,7 @@ private fun statisticsTest() {
     checkThat(computeWorkoutStreak(after, today) == WorkoutStreak(2, 2), "consecutive calendar days form streak")
     checkThat(computeWorkoutStreak(after + log, today).current == 2, "same-day logs do not inflate streak")
     checkThat(computeTotalXp(mergeCompletedWorkout(after, log)) == computeTotalXp(after), "retry save does not inflate XP")
-    checkThat(computeLevel(99).level == 1 && computeLevel(100).level == 2, "level threshold")
+    checkThat(computeLevel(999).level == 1 && computeLevel(1000).level == 2, "level threshold")
     val recap = computeMonthlyRecap(after, emptyList(), UserProfile(), "EN", java.time.YearMonth.of(2026, 9))
     checkThat(recap.workoutCount == 2 && recap.activeDays == 2 && recap.totalSets == 8, "monthly recap totals")
 }

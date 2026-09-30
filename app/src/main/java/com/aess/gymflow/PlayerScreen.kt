@@ -1,5 +1,15 @@
 package com.aess.gymflow
 
+import kotlinx.coroutines.Job
+
+import androidx.compose.animation.core.animate
+
+import androidx.compose.ui.unit.Dp
+
+import androidx.compose.animation.AnimatedContent
+
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+
 import androidx.compose.foundation.verticalScroll
 
 import android.content.Context
@@ -12,10 +22,14 @@ import android.provider.OpenableColumns
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.ui.unit.Dp
-import androidx.compose.animation.core.animate
-import kotlinx.coroutines.Job
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,6 +56,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -61,6 +76,7 @@ import java.io.File
 import java.security.MessageDigest
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 @Composable
 fun rememberMusicController(): MediaController? {
@@ -85,6 +101,7 @@ data class PlaybackUiState(
     val mediaId: String = "",
     val title: String = "",
     val artist: String = "",
+    val album: String = "",
     val isPlaying: Boolean = false,
     val positionMs: Long = 0L,
     val durationMs: Long = 0L,
@@ -107,6 +124,7 @@ fun rememberPlaybackUiState(controller: MediaController?): PlaybackUiState {
             mediaId = item?.mediaId.orEmpty(),
             title = item?.mediaMetadata?.title?.toString().orEmpty(),
             artist = item?.mediaMetadata?.artist?.toString().orEmpty(),
+            album = item?.mediaMetadata?.albumTitle?.toString().orEmpty(),
             isPlaying = p.isPlaying,
             positionMs = p.currentPosition.coerceAtLeast(0L),
             durationMs = duration,
@@ -163,7 +181,6 @@ fun MiniPlayerBar(
     LaunchedEffect(state.mediaId) { MiniPlayerVisibility.dismissed = false }
 
     if (MiniPlayerVisibility.dismissed) {
-        RestoreMiniPlayerChip(modifier = modifier, onRestore = { MiniPlayerVisibility.restore() })
         return
     }
 
@@ -269,29 +286,25 @@ fun MiniPlayerBar(
 
 /** Small pill shown after the mini player is swiped away, so playback stays reachable. */
 @Composable
-private fun RestoreMiniPlayerChip(modifier: Modifier = Modifier, onRestore: () -> Unit) {
-    val language = LocalAppLanguage.current
-    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-        Surface(
-            onClick = onRestore,
-            shape = RoundedCornerShape(50),
-            color = MaterialTheme.colorScheme.secondaryContainer,
-            tonalElevation = 3.dp
-        ) {
-            Row(Modifier.padding(horizontal = 14.dp, vertical = 9.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Rounded.MusicNote, null, Modifier.size(16.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(gs(language, R.string.open_player), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-            }
-        }
-    }
-}
-
-@Composable
 fun NowPlayingSheet(onDismiss: () -> Unit) {
     val controller = rememberMusicController()
     val state = rememberPlaybackUiState(controller)
     var queueMode by remember { mutableStateOf(false) }
+    val dismissScope = rememberCoroutineScope()
+    val latestDismiss by rememberUpdatedState(onDismiss)
+    var dismissOffset by remember { mutableFloatStateOf(0f) }
+    var dismissLocked by remember { mutableStateOf(false) }
+    var dismissJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
+    val velocity = remember { androidx.compose.ui.input.pointer.util.VelocityTracker() }
+    val screenHeight = with(LocalDensity.current) { androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp.dp.toPx().coerceAtLeast(1f) }
+    fun settleDismiss(target: Float, close: Boolean = false) {
+        dismissJob?.cancel()
+        dismissJob = dismissScope.launch {
+            androidx.compose.animation.core.animate(dismissOffset, target, animationSpec = GymGlowMotion.defaultSpatial()) { value, _ -> dismissOffset = value.coerceAtLeast(0f) }
+            if (close) latestDismiss()
+        }
+    }
+    DisposableEffect(Unit) { onDispose { dismissJob?.cancel() } }
     if (controller == null) return
 
     Dialog(
@@ -299,7 +312,27 @@ fun NowPlayingSheet(onDismiss: () -> Unit) {
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
     ) {
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().pointerInput(queueMode) {
+                detectVerticalDragGestures(
+                    onDragStart = { if (!dismissLocked) { dismissJob?.cancel(); velocity.resetTracking() } },
+                    onVerticalDrag = { change, amount ->
+                        if (!dismissLocked) { change.consume(); velocity.addPosition(change.uptimeMillis, change.position); dismissOffset = (dismissOffset + amount).coerceAtLeast(0f) }
+                    },
+                    onDragCancel = { if (!dismissLocked) settleDismiss(0f) },
+                    onDragEnd = {
+                        if (!dismissLocked) {
+                            val close = dismissOffset > screenHeight * .22f || (dismissOffset > 24f && velocity.calculateVelocity().y > 1200f)
+                            dismissLocked = close
+                            settleDismiss(if (close) screenHeight else 0f, close)
+                        }
+                    }
+                )
+            }.graphicsLayer {
+                translationY = dismissOffset
+                val fraction = (dismissOffset / screenHeight).coerceIn(0f, 1f)
+                alpha = 1f - fraction * .20f
+                scaleX = 1f - fraction * .03f; scaleY = scaleX
+            },
             color = MaterialTheme.colorScheme.background
         ) {
             BackHandler(onBack = if (queueMode) { { queueMode = false } } else onDismiss)
@@ -326,12 +359,13 @@ fun NowPlayingSheet(onDismiss: () -> Unit) {
                             )
                         }
                         Spacer(Modifier.weight(1f))
-                        Spacer(Modifier.size(48.dp))
+                        if (!queueMode) PlayerOverflowMenu(state) { queueMode = true } else Spacer(Modifier.size(48.dp))
                     }
                     Box(Modifier.weight(1f)) {
-                        AnimatedContent(queueMode, transitionSpec = { directionalMotion(targetState, GymGlowMotion.TabTravelDivisor) }, label = "player_queue") { queue ->
-                            if (queue) QueueContent(controller = controller)
-                            else NowPlayingContent(controller = controller, state = state, onQueue = { queueMode = true })
+                        if (queueMode) {
+                            QueueContent(controller = controller)
+                        } else {
+                            NowPlayingContent(controller = controller, state = state, onQueue = { queueMode = true })
                         }
                     }
                 }
@@ -368,15 +402,9 @@ private fun NowPlayingContent(controller: MediaController, state: PlaybackUiStat
             }
         }
         Spacer(Modifier.height(28.dp))
-        AnimatedContent(state.title to state.artist, transitionSpec = { effectsMotion() }, label = "track_metadata") { (title, artist) ->
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(title.ifBlank { gs(language, R.string.choose_a_track) }, fontSize = 24.sp, fontWeight = FontWeight.Bold, maxLines = 2,
-                    overflow = TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                Spacer(Modifier.height(4.dp))
-                Text(artist.ifBlank { gs(language, R.string.unknown_artist) }, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-        }
+        Text(state.title.ifBlank { gs(language, R.string.choose_a_track) }, fontSize = 24.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        Spacer(Modifier.height(4.dp))
+        Text(state.artist.ifBlank { gs(language, R.string.unknown_artist) }, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(20.dp))
         Slider(
             value = scrub,
@@ -400,7 +428,7 @@ private fun NowPlayingContent(controller: MediaController, state: PlaybackUiStat
             FilledIconButton(
                 onClick = { if (state.isPlaying) controller.pause() else controller.play() },
                 modifier = Modifier.size(76.dp)
-            ) { PlaybackMotionIcon(state.isPlaying, language, 40.dp) }
+            ) { Icon(if (state.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, gs(language, if (state.isPlaying) R.string.pause else R.string.play), Modifier.size(40.dp)) }
             IconButton(onClick = { controller.seekToNextMediaItem() }) { Icon(Icons.Rounded.SkipNext, gs(language, R.string.next_c59db3d), Modifier.size(34.dp)) }
             IconButton(onClick = {
                 controller.repeatMode = when (controller.repeatMode) {
@@ -436,7 +464,6 @@ private fun QueueContent(controller: MediaController) {
     val items = remember(state.queueSize, state.currentIndex, revision) {
         buildList { for (i in 0 until controller.mediaItemCount) add(i to controller.getMediaItemAt(i)) }
     }
-    val uniqueIds = remember(items) { items.map { it.second.mediaId }.distinct().size == items.size }
     LazyColumn(
         Modifier.fillMaxSize().padding(horizontal = 20.dp),
         contentPadding = PaddingValues(bottom = 24.dp)
@@ -455,7 +482,7 @@ private fun QueueContent(controller: MediaController) {
                 )
             }
         } else {
-            items(items, key = { (index, item) -> if (uniqueIds) "track:${item.mediaId}" else "position:$index" }) { (index, item) ->
+            items(items, key = { (index, _) -> index }) { (index, item) ->
                 ListItem(
                     headlineContent = { Text(item.mediaMetadata.title?.toString().orEmpty().ifBlank { gs(language, R.string.audio_file) }, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     supportingContent = { Text(item.mediaMetadata.artist?.toString().orEmpty().ifBlank { gs(language, R.string.unknown_artist) }, maxLines = 1) },
@@ -470,7 +497,7 @@ private fun QueueContent(controller: MediaController) {
                             IconButton(onClick = { controller.removeMediaItem(index); revision++ }) { Icon(Icons.Rounded.Close, gs(language, R.string.remove)) }
                         }
                     },
-                    modifier = (if (uniqueIds) motionItemModifier() else Modifier).fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -488,7 +515,7 @@ fun PlayerScreen() {
     val scope = rememberCoroutineScope()
 
     var tracks by remember { mutableStateOf<List<MusicTrack>>(emptyList()) }
-    var playlists by remember { mutableStateOf<List<MusicPlaylist>>(emptyList()) }
+    var playlists by remember(store) { mutableStateOf(store.loadPlaylists()) }
     LaunchedEffect(store) {
         val loaded = withContext(Dispatchers.IO) { store.loadMusicLibrary() to store.loadPlaylists() }
         tracks = (loaded.first + tracks).distinctBy { it.uri }.sortedByDescending { it.addedAt }
@@ -519,7 +546,7 @@ fun PlayerScreen() {
         }
     }
 
-    if (nowPlaying) NowPlayingSheet { nowPlaying = false }
+    if (nowPlaying) NowPlayingSheet { nowPlaying = false; scope.launch { playlists = withContext(Dispatchers.IO) { store.loadPlaylists() } } }
     menuTrack?.let { track ->
         ModalBottomSheet(onDismissRequest = { menuTrack = null }) {
             TrackMenu(
@@ -639,7 +666,7 @@ fun PlayerScreen() {
                     "ARTISTS" to gs(language, R.string.artists),
                     "PLAYLISTS" to gs(language, R.string.playlists)
                 ).forEach { (key, label) ->
-                    FilterChip(selected = section == key, onClick = { section = key }, label = { Text(label) })
+                    FilterChip(selected = section == key, onClick = { section = key }, modifier = Modifier.heightIn(min = 48.dp), label = { Text(label, maxLines = 1, softWrap = false) })
                 }
             }
         }
@@ -708,16 +735,15 @@ fun PlayerScreen() {
 @Composable
 private fun TrackCard(track: MusicTrack, onPlay: () -> Unit, onMenu: () -> Unit) {
     val language = LocalAppLanguage.current
-    Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceVariant, tonalElevation = 1.dp) {
-        Row(Modifier.fillMaxWidth().padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+    Surface(onClick = onPlay, shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceVariant, tonalElevation = 1.dp) {
+        Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             TrackArtwork(track, Modifier.size(56.dp))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(track.title, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.SemiBold)
                 Text(track.artist.ifBlank { gs(language, R.string.unknown_artist) }, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(formatDuration(track.durationMs), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(formatDuration(track.durationMs), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
             }
-            IconButton(onClick = onPlay) { Icon(Icons.Rounded.PlayArrow, gs(language, R.string.play)) }
             IconButton(onClick = onMenu) { Icon(Icons.Rounded.MoreVert, gs(language, R.string.menu)) }
         }
     }
@@ -950,6 +976,81 @@ private fun queryDisplayName(context: Context, uri: Uri): String {
 private fun formatDuration(ms: Long): String {
     val totalSec = (ms.coerceAtLeast(0L) / 1000L).toInt()
     return String.format(Locale.US, "%d:%02d", totalSec / 60, totalSec % 60)
+}
+
+private const val FAVORITES_PLAYLIST_ID = Long.MAX_VALUE
+
+@Composable private fun PlayerOverflowMenu(state: PlaybackUiState, onQueue: ()->Unit) {
+    val language = LocalAppLanguage.current
+    val context = LocalContext.current
+    val store = remember(context) { GymFlowStore(context) }
+    val scope = rememberCoroutineScope()
+    var open by remember { mutableStateOf(false) }
+    var action by remember { mutableStateOf<String?>(null) }
+    var pendingTrack by remember { mutableStateOf<PlaybackUiState?>(null) }
+    var playlists by remember { mutableStateOf<List<MusicPlaylist>>(emptyList()) }
+    var newName by remember { mutableStateOf("") }
+    var saving by remember { mutableStateOf(false) }
+    var saveError by remember { mutableStateOf(false) }
+    fun changePlaylists(transform: (List<MusicPlaylist>)->List<MusicPlaylist>) {
+        if (saving) return
+        saving = true
+        // SharedPreferences apply updates memory immediately and writes asynchronously.
+        // Finish the explicit mutation before the full-player composition can disappear.
+        runCatching { transform(store.loadPlaylists()).also(store::savePlaylists) }
+            .onSuccess { playlists = it }.onFailure { saveError = true }
+        saving = false
+    }
+    val favorite = playlists.firstOrNull { it.id == FAVORITES_PLAYLIST_ID }?.trackUris?.contains(state.mediaId) == true
+    Box {
+        IconButton(onClick = { open = true }) { Icon(Icons.Rounded.MoreVert, gs(language, R.string.menu)) }
+        DropdownMenu(open, { open = false }) {
+            DropdownMenuItem(text = { Text(if (language == "EN") "Equalizer" else "Эквалайзер") }, onClick = { open = false; action = "EQ" })
+            DropdownMenuItem(text = { Text(gs(language, R.string.add_to_playlist)) }, enabled = state.mediaId.isNotBlank() && !saving, onClick = { open = false; pendingTrack = state; newName = ""; action = "PLAYLIST" })
+            DropdownMenuItem(text = { Text(if (language == "EN") { if (favorite) "Remove from favorites" else "Add to favorites" } else { if (favorite) "Убрать из избранного" else "Добавить в избранное" }) }, enabled = state.mediaId.isNotBlank() && !saving, onClick = {
+                val uri = state.mediaId
+                open = false
+                changePlaylists { saved ->
+                    val favorites = saved.firstOrNull { it.id == FAVORITES_PLAYLIST_ID } ?: MusicPlaylist(FAVORITES_PLAYLIST_ID, if (language == "EN") "Favorites" else "Избранное")
+                    val uris = if (uri in favorites.trackUris) favorites.trackUris.filterNot { it == uri } else (favorites.trackUris + uri).distinct()
+                    saved.filterNot { it.id == FAVORITES_PLAYLIST_ID } + favorites.copy(trackUris = uris)
+                }
+            })
+            DropdownMenuItem(text = { Text(if (language == "EN") "Queue" else "Очередь") }, onClick = { open = false; onQueue() })
+            DropdownMenuItem(text = { Text(if (language == "EN") "Track information" else "Информация о треке") }, enabled = state.mediaId.isNotBlank(), onClick = { open = false; pendingTrack = state; action = "INFO" })
+        }
+    }
+    if (action == "EQ") EqualizerDialog(language) { action = null }
+    if (action == "INFO") pendingTrack?.let { track ->
+        AlertDialog(onDismissRequest = { action = null }, title = { Text(track.title, maxLines = 2, overflow = TextOverflow.Ellipsis) },
+            text = { Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(track.artist); if (track.album.isNotBlank()) Text(track.album)
+                Text(formatDuration(track.durationMs)); Text(track.mediaId, style = MaterialTheme.typography.bodySmall)
+            } }, confirmButton = { TextButton(onClick = { action = null }) { Text(gs(language, R.string.close)) } })
+    }
+    if (action == "PLAYLIST") pendingTrack?.let { track ->
+        AlertDialog(onDismissRequest = { action = null }, title = { Text(gs(language, R.string.add_to_playlist)) },
+            text = { Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                playlists.forEach { playlist ->
+                    TextButton(enabled = !saving, onClick = {
+                        val uri = track.mediaId
+                        changePlaylists { saved -> saved.map { if (it.id == playlist.id) it.copy(trackUris = (it.trackUris + uri).distinct()) else it } }
+                        action = null
+                    }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text(playlist.name, Modifier.fillMaxWidth(), maxLines = 2, overflow = TextOverflow.Ellipsis) }
+                }
+                OutlinedTextField(newName, { newName = it.take(60) }, label = { Text(gs(language, R.string.new_playlist)) }, singleLine = true)
+                FilledTonalButton(enabled = newName.isNotBlank() && !saving, onClick = {
+                    val name = newName.trim(); val uri = track.mediaId
+                    changePlaylists { saved ->
+                        var id = System.currentTimeMillis()
+                        while (saved.any { it.id == id } || id == FAVORITES_PLAYLIST_ID) id++
+                        saved + MusicPlaylist(id, name, listOf(uri))
+                    }
+                    action = null
+                }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text(if (language == "EN") "Create and add" else "Создать и добавить", maxLines = 2) }
+            } }, confirmButton = { TextButton(onClick = { action = null }) { Text(gs(language, R.string.close)) } })
+    }
+    if (saveError) AlertDialog(onDismissRequest = { saveError = false }, text = { Text(if (language == "EN") "Could not save changes. Try again." else "Не удалось сохранить изменения. Попробуйте ещё раз.") }, confirmButton = { TextButton(onClick = { saveError = false }) { Text(gs(language, R.string.close)) } })
 }
 
 @Composable

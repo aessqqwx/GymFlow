@@ -8,6 +8,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
@@ -112,7 +116,8 @@ internal fun RewardReveal(
 }
 
 @Composable
-internal fun MotionStreakBadge(days: Int, suffix: String = "", before: Int = days, event: Long? = null, record: Boolean = false, revealOrder: Int = 0) {
+internal fun MotionStreakBadge(days: Int, suffix: String = "", before: Int = days, event: Long? = null, record: Boolean = false, revealOrder: Int = 0, active: Boolean = true) {
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     var displayed by rememberSaveable(event) { mutableIntStateOf(before) }
     var played by rememberSaveable(event) { mutableStateOf(false) }
     val flame = remember(event) { Animatable(1f) }
@@ -131,13 +136,14 @@ internal fun MotionStreakBadge(days: Int, suffix: String = "", before: Int = day
         displayed = days
         flame.snapTo(1f)
         if (increased) {
+            if (event != null) haptic.performHapticFeedback(if (record) androidx.compose.ui.hapticfeedback.HapticFeedbackType.Confirm else androidx.compose.ui.hapticfeedback.HapticFeedbackType.GestureEnd)
             flame.animateTo(if (record) GymGlowMotion.CelebrationPeakScale else 1.025f, GymGlowMotion.fastSpatial())
             flame.animateTo(1f, GymGlowMotion.celebration())
         }
     }
     Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.tertiaryContainer) {
         Row(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("🔥", fontSize = 17.sp, modifier = Modifier.graphicsLayer {
+            Icon(Icons.Rounded.LocalFireDepartment, null, tint = if (active) Color(0xFFE85D55) else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp).graphicsLayer {
                 scaleX = flame.value; scaleY = flame.value
                 rotationZ = (flame.value - 1f) * 80f
             })

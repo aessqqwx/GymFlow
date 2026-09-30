@@ -33,6 +33,9 @@ internal fun MusicTrack.asMediaItem(): MediaItem {
 
 class MusicService : MediaSessionService() {
     companion object {
+        internal val equalizerState = kotlinx.coroutines.flow.MutableStateFlow(EqualizerUiState())
+        internal var equalizer: MusicEqualizer? = null
+            private set
         @Volatile private var suppressPersistForReset = false
         fun suppressPersistenceForStateReplacement() { suppressPersistForReset = true }
         fun suppressPersistenceForReset() = suppressPersistenceForStateReplacement()
@@ -45,14 +48,12 @@ class MusicService : MediaSessionService() {
 
     private lateinit var player: ExoPlayer
     private var session: MediaSession? = null
-    private var queueRevision = 0L
-    private var restoring = true
     private lateinit var store: GymFlowStore
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     private val persistListener = object : Player.Listener {
+        override fun onAudioSessionIdChanged(audioSessionId: Int) { equalizer?.attach(audioSessionId) }
         override fun onEvents(player: Player, events: Player.Events) {
-            if (events.contains(Player.EVENT_TIMELINE_CHANGED)) queueRevision++
             if (
                 events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION) ||
                 events.contains(Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED) ||
@@ -68,7 +69,9 @@ class MusicService : MediaSessionService() {
         // If reset was requested while the service was not running, consume the stale guard now.
         suppressPersistForReset = false
         store = GymFlowStore(this)
+        equalizer = MusicEqualizer(this, equalizerState)
         player = ExoPlayer.Builder(this).build().apply { addListener(persistListener) }
+        equalizer?.attach(player.audioSessionId)
         session = MediaSession.Builder(this, player).build()
         restorePlayerStateAsync()
     }
@@ -77,7 +80,6 @@ class MusicService : MediaSessionService() {
 
     private fun restorePlayerStateAsync() {
         serviceScope.launch {
-            val initialRevision = queueRevision
             val restored = withContext(Dispatchers.IO) {
                 val prefs = store.loadPlayerPreferences()
                 val originalLibrary = store.loadMusicLibrary()
@@ -90,12 +92,6 @@ class MusicService : MediaSessionService() {
                 RestoredState(prefs, tracks)
             }
             if (!::player.isInitialized) return@launch
-            // An explicit user queue takes priority over asynchronous restoration.
-            if (queueRevision != initialRevision || player.mediaItemCount > 0) {
-                restoring = false
-                persistPlayerState()
-                return@launch
-            }
             val queue = restored.tracks.map(MusicTrack::asMediaItem)
             if (queue.isNotEmpty()) {
                 val index = restored.prefs.currentUri.takeIf(String::isNotBlank)?.let { uri ->
@@ -106,8 +102,6 @@ class MusicService : MediaSessionService() {
             }
             player.shuffleModeEnabled = restored.prefs.shuffleEnabled
             player.repeatMode = restored.prefs.repeatMode.coerceIn(Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL)
-            restoring = false
-            persistPlayerState()
         }
     }
 
@@ -116,7 +110,7 @@ class MusicService : MediaSessionService() {
     }.getOrDefault(false)
 
     private fun persistPlayerState() {
-        if (suppressPersistForReset || restoring || !::player.isInitialized) return
+        if (suppressPersistForReset || !::player.isInitialized) return
         val queue = buildList {
             for (i in 0 until player.mediaItemCount) add(player.getMediaItemAt(i).mediaId)
         }.filter(String::isNotBlank)
@@ -143,6 +137,8 @@ class MusicService : MediaSessionService() {
         session?.release()
         session = null
         player.removeListener(persistListener)
+        equalizer?.release()
+        equalizer = null
         player.release()
         super.onDestroy()
     }

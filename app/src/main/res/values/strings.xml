@@ -110,7 +110,7 @@
     <string name="today_s_progress" formatted="false">Прогресс дня</string>
     <string name="workout_done" formatted="false">Тренировка</string>
     <string name="support_project" formatted="false">Поддержать проект</string>
-    <string name="support_project_description" formatted="false">GymFlow развивается силами небольшой команды. Если приложение оказалось полезным, вы можете рассказать о нём друзьям или написать отзыв в Telegram-канале — это лучшая поддержка.</string>
+    <string name="support_project_description" formatted="false">GymFlow развивается небольшой командой. Поддержка необязательна и не влияет на функции приложения.</string>
     <string name="how_was_your_workout" formatted="false">Понравилась ли вам тренировка?</string>
     <string name="workout_completed_label" formatted="false">Тренировка завершена</string>
     <string name="member_since" formatted="false">С нами с %1$s</string>
@@ -783,6 +783,4 @@
     <string name="missed_workout_title" formatted="false">Пора вернуться</string>
     <string name="missed_workout_reminder" formatted="false">%1$sсегодня ещё не было тренировки. Короткой сессии достаточно.</string>
     <string name="streak" formatted="false">Серия</string>
-    <string name="workout_save_failed">Не удалось сохранить тренировку. Повторите попытку.</string>
-    <string name="retry_save">Повторить</string>
 </resources>

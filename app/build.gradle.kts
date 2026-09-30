@@ -12,7 +12,7 @@ android {
         applicationId = "com.aess.gymflow"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
+        versionCode = 5
         versionName = "1.5"
         manifestPlaceholders["appLabel"] = "@string/app_name"
     }
@@ -22,7 +22,7 @@ android {
     buildTypes {
         getByName("debug") {
             applicationIdSuffix = ".test"
-            manifestPlaceholders["appLabel"] = "GymGlow Test"
+            manifestPlaceholders["appLabel"] = "GymFlow"
         }
     }
 

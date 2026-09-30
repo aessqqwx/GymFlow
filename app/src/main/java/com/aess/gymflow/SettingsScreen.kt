@@ -1,16 +1,21 @@
 package com.aess.gymflow
 
-import androidx.compose.foundation.horizontalScroll
-
+import androidx.compose.material.icons.rounded.*
+import kotlinx.coroutines.launch
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,6 +64,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -95,18 +101,7 @@ fun SettingsScreen(
 
     legalDialog?.let { type ->
         val terms = type == "terms"
-        AlertDialog(
-            onDismissRequest = { legalDialog = null },
-            title = { Text(if (terms) gs(language, R.string.terms_of_use) else gs(language, R.string.privacy_policy)) },
-            text = {
-                Text(
-                    if (terms) gs(language, R.string.terms_full_text) else gs(language, R.string.privacy_full_text),
-                    modifier = Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState()),
-                    lineHeight = 20.sp
-                )
-            },
-            confirmButton = { TextButton(onClick = { legalDialog = null }) { Text(gs(language, R.string.close)) } }
-        )
+        LegalDocumentDialog(if (terms) gs(language, R.string.terms_of_use) else gs(language, R.string.privacy_policy), if (terms) gs(language, R.string.terms_full_text) else gs(language, R.string.privacy_full_text), { legalDialog = null })
     }
 
     fun openMail() {
@@ -135,7 +130,7 @@ fun SettingsScreen(
     LazyColumn(
         Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 20.dp),
         contentPadding = PaddingValues(top = 12.dp, bottom = 30.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         item {
             Row(
@@ -148,6 +143,7 @@ fun SettingsScreen(
             }
         }
 
+        item { SettingsGroupTitle(if (language == "EN") "APPLICATION" else "ПРИЛОЖЕНИЕ") }
         item {
             SettingsNavTile(
                 title = gs(language, R.string.language),
@@ -337,46 +333,12 @@ fun SettingsScreen(
             }
         }
 
-        item {
-            SettingsSection(gs(language, R.string.data_section), Icons.Rounded.Backup) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilledTonalButton(onClick = onExport, modifier = Modifier.weight(1f)) {
-                        Text(gs(language, R.string.export))
-                    }
-                    FilledTonalButton(onClick = onImport, modifier = Modifier.weight(1f)) {
-                        Text(gs(language, R.string.import_action))
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    gs(language, R.string.one_json_file_profile_workouts_nutrition_mea),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp
-                )
-                Spacer(Modifier.height(10.dp))
-                FilledTonalButton(onClick = { showResetDialog = true }, modifier = Modifier.fillMaxWidth()) {
-                    Text(gs(language, R.string.reset_data))
-                }
-            }
-        }
-
-        item {
-            Surface(
-                modifier = Modifier.fillMaxWidth().clickable { openMail() },
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(24.dp)
-            ) {
-                Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Rounded.Email, null, modifier = Modifier.size(22.dp), tint = MaterialTheme.colorScheme.primary)
-                    Spacer(Modifier.width(13.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(gs(language, R.string.feedback), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                        Text(gs(language, R.string.support_email), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                    }
-                    Icon(Icons.Rounded.ChevronRight, null, modifier = Modifier.size(20.dp))
-                }
-            }
-        }
+        item { SettingsGroupTitle(if (language == "EN") "DATA" else "ДАННЫЕ") }
+        item { SettingsNavTile(gs(language, R.string.export), "JSON", Icons.Rounded.Backup, false, onExport) }
+        item { SettingsNavTile(gs(language, R.string.import_action), "JSON", Icons.Rounded.UploadFile, false, onImport) }
+        item { SettingsNavTile(gs(language, R.string.reset_data), "", Icons.Rounded.Delete, false) { showResetDialog = true } }
+        item { SettingsGroupTitle(if (language == "EN") "ABOUT" else "О ПРИЛОЖЕНИИ") }
+        item { SettingsNavTile(gs(language, R.string.feedback), gs(language, R.string.support_email), Icons.Rounded.Email, false, ::openMail) }
 
         item {
             Surface(
@@ -384,16 +346,16 @@ fun SettingsScreen(
                     runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/GymFlowOfficial"))) }
                 },
                 color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(24.dp)
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Surface(shape = RoundedCornerShape(14.dp), color = Color(0xFF229ED9).copy(alpha = .14f)) {
-                        Box(Modifier.size(42.dp), contentAlignment = Alignment.Center) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Surface(shape = RoundedCornerShape(10.dp), color = if (MaterialTheme.colorScheme.surfaceVariant.luminance() > .5f) Color(0xFF383838) else Color.Transparent) {
+                        Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
                             Icon(
                                 Icons.Rounded.Send,
-                                contentDescription = gs(language, R.string.telegram),
-                                modifier = Modifier.size(23.dp),
-                                tint = Color(0xFF229ED9)
+                                contentDescription = "Telegram",
+                                modifier = Modifier.size(22.dp),
+                                tint = Color.White
                             )
                         }
                     }
@@ -406,11 +368,27 @@ fun SettingsScreen(
 
         item {
             var showSupportDialog by remember { mutableStateOf(false) }
+            val supportSnackbar = remember { androidx.compose.material3.SnackbarHostState() }
+            val supportScope = androidx.compose.runtime.rememberCoroutineScope()
             if (showSupportDialog) {
                 AlertDialog(
                     onDismissRequest = { showSupportDialog = false },
                     title = { Text(gs(language, R.string.support_project)) },
-                    text = { Text(gs(language, R.string.support_project_description), lineHeight = 20.sp) },
+                    text = {
+                        Column {
+                            Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                Text(gs(language, R.string.support_project_description), lineHeight = 22.sp)
+                                SupportDetail(if (language == "EN") "Recipient" else "Получатель", "Логунов Фёдор Андреевич")
+                                SupportDetail(if (language == "EN") "Bank" else "Банк", "Сбербанк")
+                                SupportDetail(if (language == "EN") "Card number" else "Номер карты", "2202 2092 2016 0609")
+                                FilledTonalButton(onClick = {
+                                    val copied = runCatching { context.getSystemService(android.content.ClipboardManager::class.java).setPrimaryClip(android.content.ClipData.newPlainText("GymFlow", "2202 2092 2016 0609")) }.isSuccess
+                                    supportScope.launch { supportSnackbar.showSnackbar(if (copied) { if (language == "EN") "Number copied" else "Номер скопирован" } else { if (language == "EN") "Could not copy. Try again." else "Не удалось скопировать. Попробуйте ещё раз." }, duration = androidx.compose.material3.SnackbarDuration.Short) }
+                                }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text(if (language == "EN") "Copy number" else "Скопировать номер", maxLines = 2) }
+                            }
+                            androidx.compose.material3.SnackbarHost(supportSnackbar)
+                        }
+                    },
                     confirmButton = {
                         TextButton(onClick = {
                             showSupportDialog = false
@@ -420,42 +398,13 @@ fun SettingsScreen(
                     dismissButton = { TextButton(onClick = { showSupportDialog = false }) { Text(gs(language, R.string.close)) } }
                 )
             }
-            TextButton(
-                onClick = { showSupportDialog = true },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(Icons.Rounded.Favorite, null, modifier = Modifier.size(16.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(gs(language, R.string.support_project), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-            }
+            SettingsNavTile(gs(language, R.string.support_project), "", Icons.Rounded.Favorite, false) { showSupportDialog = true }
         }
 
-        item {
-            Text(
-                gs(language, R.string.app_version_display),
-                modifier = Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 2.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 12.sp
-            )
-        }
+        item { SettingsNavTile(gs(language, R.string.terms_of_use), "", Icons.Rounded.Description, false) { legalDialog = "terms" } }
+        item { SettingsNavTile(gs(language, R.string.privacy_policy), "", Icons.Rounded.PrivacyTip, false) { legalDialog = "privacy" } }
+        item { SettingsNavTile(if (language == "EN") "Version" else "Версия", "GymFlow " + runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName.orEmpty() }.getOrDefault("1.5"), Icons.Rounded.Info, false, {}) }
 
-        // Legal information intentionally stays at the very bottom of Settings.
-        item {
-            Text(
-                gs(language, R.string.terms_of_use),
-                Modifier.fillMaxWidth().clickable { legalDialog = "terms" }.padding(vertical = 10.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 13.sp
-            )
-        }
-        item {
-            Text(
-                gs(language, R.string.privacy_policy),
-                Modifier.fillMaxWidth().clickable { legalDialog = "privacy" }.padding(top = 2.dp, bottom = 14.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 13.sp
-            )
-        }
     }
 }
 
@@ -471,21 +420,21 @@ private fun SettingsNavTile(
     Surface(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         color = MaterialTheme.colorScheme.surfaceVariant,
-        shape = RoundedCornerShape(24.dp)
+        shape = RoundedCornerShape(12.dp)
     ) {
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 15.dp),
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
-                Box(Modifier.size(44.dp), contentAlignment = Alignment.Center) {
+            Surface(shape = RoundedCornerShape(10.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
+                Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
                     Icon(icon, null, tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(22.dp))
                 }
             }
             Spacer(Modifier.width(13.dp))
             Column(Modifier.weight(1f)) {
-                Text(title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                Text(value, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                if (value.isNotBlank()) Text(value, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Icon(
                 Icons.Rounded.ChevronRight,
@@ -571,4 +520,15 @@ private fun SettingDivider() {
     Spacer(Modifier.height(12.dp))
     Surface(Modifier.fillMaxWidth().height(1.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .55f)) {}
     Spacer(Modifier.height(12.dp))
+}
+
+@Composable private fun SettingsGroupTitle(title: String) {
+    Text(title, Modifier.padding(top = 24.dp, bottom = 8.dp, start = 12.dp), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+@Composable private fun SupportDetail(label: String, value: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(label, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+    }
 }

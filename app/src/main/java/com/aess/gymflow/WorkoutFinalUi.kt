@@ -1,13 +1,32 @@
 package com.aess.gymflow
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animate
+import kotlinx.coroutines.Job
+
+import androidx.compose.ui.semantics.selected
+
+import androidx.compose.ui.semantics.disabled
+
+import androidx.compose.ui.semantics.onClick
+
+import androidx.compose.ui.draw.drawBehind
+
+import androidx.compose.ui.graphics.graphicsLayer
+
+import androidx.compose.foundation.verticalScroll
+
 import androidx.compose.animation.core.animateFloatAsState
+
+import androidx.compose.animation.core.animate
+
+import androidx.compose.animation.animateColorAsState
+
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
@@ -18,29 +37,29 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Timer
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.disabled
-import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.Job
+import kotlin.math.roundToInt
 
 @Composable
 fun SwipeToCompleteControl(
@@ -60,7 +79,7 @@ fun SwipeToCompleteControl(
     var locked by remember(resetKey) { mutableStateOf(false) }
     DisposableEffect(resetKey) { onDispose { settleJob?.cancel() } }
 
-    BoxWithConstraints(modifier.fillMaxWidth().height(78.dp)) {
+    BoxWithConstraints(modifier.fillMaxWidth().height(96.dp)) {
         val density = LocalDensity.current
         val thumbSize = 62.dp
         val horizontalInset = 8.dp
@@ -127,7 +146,7 @@ fun SwipeToCompleteControl(
                         }
                 )
                 Row(
-                    Modifier.align(Alignment.Center).graphicsLayer {
+                    Modifier.align(Alignment.Center).fillMaxWidth().padding(start = 80.dp, end = 12.dp).graphicsLayer {
                         alpha = (1f - (dragOffset / maxDragPx) * .55f).coerceIn(.45f, 1f)
                     },
                     verticalAlignment = Alignment.CenterVertically
@@ -135,7 +154,7 @@ fun SwipeToCompleteControl(
                     Text(
                         gs(language, R.string.swipe_to_complete_set),
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp
+                        fontSize = 15.sp, modifier = Modifier.weight(1f), maxLines = 3
                     )
                     Spacer(Modifier.width(5.dp))
                     Icon(Icons.Rounded.ArrowForward, null, Modifier.size(18.dp))
@@ -172,11 +191,12 @@ fun WorkoutSetInputCard(
     val language = LocalAppLanguage.current
     ExpressiveCard(Modifier.fillMaxWidth(), containerColor = MaterialTheme.colorScheme.primaryContainer) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            AnimatedContent(setIndex, transitionSpec = { numberMotion(targetState > initialState) }, label = "workout_set_number") { current ->
-                Text(gs(language, R.string.set_of, current + 1, exercise.sets),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = .72f),
-                    fontSize = 13.sp, fontWeight = FontWeight.Bold)
-            }
+            Text(
+                gs(language, R.string.set_of, setIndex + 1, exercise.sets),
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = .72f),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
             val summary = when {
                 timed -> gs(language, R.string.seconds_count, effortText.ifBlank { defaultEffort(exercise) })
                 exercise.weightLabel != null -> "${weightText.ifBlank { "—" }} ${gs(language, R.string.kg)} × ${effortText.ifBlank { defaultEffort(exercise) }}"
@@ -240,7 +260,7 @@ fun WorkoutRestScreen(
     }
     val presets = listOf(30, 60, 90, 120, 180)
     Column(
-        Modifier.fillMaxSize().padding(horizontal = 24.dp),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -282,7 +302,7 @@ fun WorkoutRestScreen(
             Column {
                 Text(gs(language, R.string.next_set), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(5.dp))
-                Text(exerciseTitle(exercise, language), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                Text(exerciseTitle(exercise, language), fontSize = 20.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 Text(gs(language, R.string.set_of, setIndex + 1, exercise.sets), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(4.dp))
                 Text(effortSummary, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
@@ -291,16 +311,16 @@ fun WorkoutRestScreen(
         Spacer(Modifier.height(22.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (restPaused) {
-                FilledTonalButton(onClick = onResumeRest, modifier = Modifier.weight(1f)) { Text(gs(language, R.string.resume)) }
+                FilledTonalButton(onClick = onResumeRest, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) { Text(gs(language, R.string.resume)) }
             } else {
-                FilledTonalButton(onClick = onPauseRest, modifier = Modifier.weight(1f)) { Text(gs(language, R.string.pause)) }
+                FilledTonalButton(onClick = onPauseRest, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) { Text(gs(language, R.string.pause)) }
             }
-            OutlinedButton(onClick = onAdd30, modifier = Modifier.weight(1f)) { Text("+30") }
+            OutlinedButton(onClick = onAdd30, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) { Text("+30") }
         }
         Spacer(Modifier.height(8.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick = onRestart, modifier = Modifier.weight(1f)) { Text(gs(language, R.string.restart_timer)) }
-            ExpressiveSurfaceButton(onClick = onFinishRest, modifier = Modifier.weight(1f)) {
+            OutlinedButton(onClick = onRestart, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) { Text(if (language == "EN") "Restart" else "Сначала", maxLines = 1, softWrap = false) }
+            ExpressiveSurfaceButton(onClick = onFinishRest, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) {
                 Text(gs(language, R.string.skip_rest), fontWeight = FontWeight.Bold)
             }
         }
@@ -359,17 +379,17 @@ fun WorkoutCompletedScreen(
                         }
                     }
                     Text(gs(language, R.string.workout_completed_label), fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                    Text(workoutCompactTitle(day, language), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                    RewardReveal(log.id, 1) { Text(workoutCompactTitle(day, language), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) }
                 }
             }
-            RewardReveal(log.id, 1) {
+            RewardReveal(log.id, 2) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     ResultChip(Icons.Rounded.Timer, gs(language, R.string.minutes_short, durationMin))
                     ResultChip(Icons.Rounded.Check, gs(language, R.string.sets_short, log.completedSets))
                 }
             }
             if (xpGained > 0) {
-                RewardReveal(log.id, 2) {
+                RewardReveal(log.id, 3) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.primaryContainer) {
                             Text(gs(language, R.string.xp_gained, xpGained), Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
@@ -380,18 +400,18 @@ fun WorkoutCompletedScreen(
                     }
                 }
                 if (leveledUp) {
-                    RewardReveal(log.id, 3, emphasized = true) {
+                    RewardReveal(log.id, 4, emphasized = true) {
                         Text(gs(language, R.string.level_up, levelAfter.level), fontWeight = FontWeight.Bold,
                             fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
             if (streakAfter > 0) {
-                RewardReveal(log.id, if (leveledUp) 4 else 3, emphasized = isNewStreakRecord) {
+                RewardReveal(log.id, 5, emphasized = isNewStreakRecord) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         MotionStreakBadge(streakAfter, " " + gs(language, R.string.days_short_suffix),
                             before = if (streakIncreased) streakBefore else streakAfter, event = log.id, record = isNewStreakRecord,
-                            revealOrder = if (leveledUp) 4 else 3)
+                            revealOrder = 5)
                         if (streakIncreased) {
                             Text(gs(language, if (isNewStreakRecord) R.string.new_streak_record else R.string.streak_extended),
                                 fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -400,14 +420,18 @@ fun WorkoutCompletedScreen(
                 }
             }
             if (newAchievements.isNotEmpty() || newPrs.isNotEmpty()) {
-                RewardReveal(log.id, 5) {
+                RewardReveal(log.id, 6) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        newAchievements.take(2).forEach { ach ->
+                        newAchievements.forEachIndexed { index, ach ->
+                            RewardReveal(log.id, 6 + index) {
                             Text("${ach.icon} ${gs(language, ach.titleRes)}", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                            }
                         }
-                        newPrs.take(3).forEach { title ->
+                        newPrs.forEachIndexed { index, title ->
+                            RewardReveal(log.id, 6 + newAchievements.size + index) {
                             Text(gs(language, R.string.new_pr_label, title), fontWeight = FontWeight.SemiBold,
                                 fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
+                            }
                         }
                     }
                 }
@@ -477,24 +501,13 @@ fun PostWorkoutExpressiveLoader(
     var stage by remember(log.id) { mutableIntStateOf(0) }
     var persisted by remember(log.id) { mutableStateOf(false) }
 
-    var retry by remember(log.id) { mutableIntStateOf(0) }
-    var saveFailed by remember(log.id) { mutableStateOf(false) }
-
-    LaunchedEffect(log.id, retry) {
+    LaunchedEffect(log.id) {
         stage = 0
-        saveFailed = false
         if (!persisted) {
-            try {
-                onPersistAndUpdate(log) { realStage ->
-                    stage = realStage.coerceIn(0, messages.lastIndex)
-                }
-                persisted = true
-            } catch (cancelled: kotlinx.coroutines.CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                saveFailed = true
-                return@LaunchedEffect
+            onPersistAndUpdate(log) { realStage ->
+                stage = realStage.coerceIn(0, messages.lastIndex)
             }
+            persisted = true
         }
         stage = messages.lastIndex
         onHome()
@@ -505,10 +518,7 @@ fun PostWorkoutExpressiveLoader(
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            if (saveFailed) {
-                Text(gs(language, R.string.workout_save_failed))
-                TextButton(onClick = { retry++ }) { Text(gs(language, R.string.retry_save)) }
-            } else GymFlowMorphingShape(Modifier.size(132.dp))
+            GymFlowMorphingShape(Modifier.size(132.dp))
             Spacer(Modifier.height(30.dp))
             AnimatedContent(stage, transitionSpec = { effectsMotion() }, label = "post_workout_stage") { index ->
                 Text(messages[index], fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.SemiBold)
@@ -568,25 +578,25 @@ fun workoutMuscleLine(exercise: Exercise, language: String): String {
 @Composable
 fun TechniqueCard(exercise: Exercise) {
     val language = LocalAppLanguage.current
-    val cues = exerciseCues(exercise, language)
-    val instructions = cues.take(5).ifEmpty {
-        listOf(gs(language, R.string.move_smoothly_and_under_control))
-    }
-    val mistakes = exerciseMistakes(exercise, language)
-
+    val instructions = exerciseCues(exercise, language).ifEmpty { listOf(gs(language, R.string.move_smoothly_and_under_control)) }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        ExpressiveCard(Modifier.fillMaxWidth()) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(gs(language, R.string.quick_instructions), fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                instructions.forEachIndexed { index, cue ->
-                    Text("${index + 1}. $cue", fontSize = 15.sp, lineHeight = 21.sp)
-                }
+        WorkoutInstructionAccordion(exercise.id + ":instructions", gs(language, R.string.quick_instructions), instructions, true)
+        WorkoutInstructionAccordion(exercise.id + ":mistakes", gs(language, R.string.common_mistakes), exerciseMistakes(exercise, language), false)
+    }
+}
+
+@Composable private fun WorkoutInstructionAccordion(key: String, title: String, lines: List<String>, numbered: Boolean) {
+    var expanded by androidx.compose.runtime.saveable.rememberSaveable(key) { mutableStateOf(false) }
+    Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+        Column {
+            Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }.heightIn(min = 56.dp).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(title, Modifier.weight(1f), fontSize = 18.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                Icon(if (expanded) androidx.compose.material.icons.Icons.Rounded.ExpandLess else androidx.compose.material.icons.Icons.Rounded.ExpandMore, null)
             }
-        }
-        ExpressiveCard(Modifier.fillMaxWidth()) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(gs(language, R.string.common_mistakes), fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                mistakes.take(5).forEach { Text("• $it", fontSize = 15.sp, lineHeight = 21.sp) }
+            androidx.compose.animation.AnimatedVisibility(expanded, enter = expandMotion(), exit = collapseMotion()) {
+                Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    lines.forEachIndexed { index, line -> Text(if (numbered) "${index + 1}. $line" else "• $line", fontSize = 15.sp, lineHeight = 23.sp) }
+                }
             }
         }
     }

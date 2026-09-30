@@ -3,6 +3,8 @@ package com.aess.gymflow
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,8 +16,6 @@ import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,6 +25,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 private fun nutritionToday(millis: Long): Boolean =
     Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate() == LocalDate.now()
@@ -40,7 +41,6 @@ fun NutritionScreen(
     onProfileChange: (UserProfile) -> Unit
 ) {
     val l = profile.appLanguage
-    val haptic = LocalHapticFeedback.current
     var showEditor by remember { mutableStateOf(false) }
     val today = nutrition.filter { nutritionToday(it.createdAt) }
     val visibleEntries = today.filter { it.note != "quick_adjust" }
@@ -57,7 +57,6 @@ fun NutritionScreen(
         val safeW = if (w < 0) -minOf(-w, water) else w
         if (safeC != 0 || safeP != 0.0 || safeW != 0) {
             onAdd(NutritionEntry(System.currentTimeMillis(), System.currentTimeMillis(), safeC, safeP, safeW, "quick_adjust"))
-            haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
         }
     }
 
@@ -65,6 +64,7 @@ fun NutritionScreen(
         NutritionEditorSheet(
             l = l,
             profile = profile,
+            progress = progress,
             onDismiss = { showEditor = false },
             onProfileChange = onProfileChange,
             onAdd = { c, p, w, note ->
@@ -76,8 +76,8 @@ fun NutritionScreen(
 
     LazyColumn(
         Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 18.dp),
-        contentPadding = PaddingValues(top = 18.dp, bottom = 132.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        contentPadding = PaddingValues(top = 18.dp, bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -120,7 +120,7 @@ fun NutritionScreen(
         item { NutritionSuggestionCard(l) }
         if (visibleEntries.isNotEmpty()) item { Text(gs(l, R.string.today_s_entries), fontSize = 21.sp, fontWeight = FontWeight.Bold) }
         items(visibleEntries, key = { it.id }) { e ->
-            ExpressiveCard(motionItemModifier().fillMaxWidth()) {
+            ExpressiveCard(Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(e.note.ifBlank { gs(l, R.string.nutrition_entry) }, fontWeight = FontWeight.SemiBold)
@@ -185,13 +185,12 @@ fun dailyFoodSuggestion(date: LocalDate, variant: Int = 0): List<FoodItem> {
 fun NutritionSuggestionCard(l: String, compact: Boolean = false) {
     var variant by remember { mutableIntStateOf(0) }
     val today = LocalDate.now()
-    val suggestionKey = today to variant
+    val items = remember(variant, today) { dailyFoodSuggestion(today, variant) }
     val vPad = if (compact) 10.dp else 14.dp
     val emojiSize = if (compact) 20.sp else 26.sp
     ExpressiveCard(Modifier.fillMaxWidth(), corner = if (compact) 22.dp else 28.dp) {
         Column(verticalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp)) {
-            AnimatedContent(targetState = suggestionKey, transitionSpec = { effectsMotion() }, label = "food_suggestion") { (date, version) ->
-                val current = remember(date, version) { dailyFoodSuggestion(date, version) }
+            AnimatedContent(targetState = items, transitionSpec = { effectsMotion() }, label = "food_suggestion") { current ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     current.forEachIndexed { index, food ->
                         Surface(
@@ -242,6 +241,7 @@ fun NutritionSuggestionCard(l: String, compact: Boolean = false) {
 private fun NutritionEditorSheet(
     l: String,
     profile: UserProfile,
+    progress: List<ProgressEntry>,
     onDismiss: () -> Unit,
     onProfileChange: (UserProfile) -> Unit,
     onAdd: (Int, Double, Int, String) -> Unit
@@ -254,10 +254,15 @@ private fun NutritionEditorSheet(
     var gc by remember { mutableStateOf(profile.calorieGoal.toString()) }
     var gw by remember { mutableStateOf(profile.waterGoalMl.toString()) }
 
+    val snackbar = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    fun invalid(message: String) { scope.launch { snackbar.currentSnackbarData?.dismiss(); snackbar.showSnackbar(message, duration = SnackbarDuration.Short) } }
+    val recommendation = remember(profile, progress) { recommendProtein(profile, progress) }
     ModalBottomSheet(onDismissRequest = onDismiss) {
+      Box(Modifier.fillMaxWidth().imePadding()) {
         LazyColumn(
             Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(bottom = 34.dp),
+            contentPadding = PaddingValues(bottom = if (snackbar.currentSnackbarData != null) 88.dp else 24.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item { Text(gs(l, R.string.edit_nutrition), fontSize = 25.sp, fontWeight = FontWeight.Bold) }
@@ -267,7 +272,14 @@ private fun NutritionEditorSheet(
             item { OutlinedTextField(water, { water = it.filter(Char::isDigit) }, Modifier.fillMaxWidth(), label = { Text(gs(l, R.string.water_ml)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), shape = RoundedCornerShape(20.dp)) }
             item { OutlinedTextField(note, { note = it.take(80) }, Modifier.fillMaxWidth(), label = { Text(gs(l, R.string.note_90fdad8)) }, shape = RoundedCornerShape(20.dp)) }
             item {
-                ExpressiveSurfaceButton(onClick = { onAdd(calories.toIntOrNull() ?: 0, protein.replace(',', '.').toDoubleOrNull() ?: 0.0, water.toIntOrNull() ?: 0, note) }, modifier = Modifier.fillMaxWidth()) { Text(gs(l, R.string.add_entry), fontWeight = FontWeight.Bold) }
+                ExpressiveSurfaceButton(onClick = {
+                    val p = if (protein.isBlank()) 0.0 else protein.replace(',', '.').toDoubleOrNull()
+                    val c = if (calories.isBlank()) 0 else calories.toIntOrNull()
+                    val w = if (water.isBlank()) 0 else water.toIntOrNull()
+                    if (p == null || !p.isFinite() || p !in 0.0..500.0 || c == null || c !in 0..10000 || w == null || w !in 0..10000 || (p == 0.0 && c == 0 && w == 0)) {
+                        invalid(if (l == "EN") "Check the entry: use realistic nonnegative values and fill at least one field." else "Проверьте запись: укажите реальные неотрицательные значения хотя бы в одном поле.")
+                    } else onAdd(c, p, w, note)
+                }, modifier = Modifier.fillMaxWidth()) { Text(gs(l, R.string.add_entry), fontWeight = FontWeight.Bold) }
             }
             item { HorizontalDivider(); Text(gs(l, R.string.daily_goals), fontWeight = FontWeight.Bold, fontSize = 19.sp) }
             item { OutlinedTextField(gp, { gp = it.filter(Char::isDigit) }, Modifier.fillMaxWidth(), label = { Text(gs(l, R.string.protein_g)) }, shape = RoundedCornerShape(20.dp)) }
@@ -277,11 +289,60 @@ private fun NutritionEditorSheet(
                 TextButton(
                     onClick = {
                         val p = gp.toIntOrNull(); val c = gc.toIntOrNull(); val w = gw.toIntOrNull()
-                        if (p != null && c != null && w != null) onProfileChange(profile.copy(proteinGoal = p, calorieGoal = c, waterGoalMl = w, nutritionAutoTargets = false))
+                        when {
+                            !validProteinTarget(p) -> invalid(if (l == "EN") "Enter a protein target from 1 to 500 g. Check for a typo." else "Введите цель белка от 1 до 500 г. Проверьте, нет ли опечатки.")
+                            c == null || c !in 500..10000 || w == null || w !in 250..10000 -> invalid(if (l == "EN") "Check targets: 500–10000 kcal and 250–10000 ml." else "Проверьте цели: 500–10000 ккал и 250–10000 мл.")
+                            else -> { onProfileChange(profile.copy(proteinGoal = p!!, calorieGoal = c, waterGoalMl = w, nutritionAutoTargets = false)); invalid(if (l == "EN") "Targets saved" else "Цели сохранены") }
+                        }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) { Text(gs(l, R.string.save_targets)) }
             }
+            item {
+                Text(if (l == "EN") "Activity" else "Активность", fontWeight = FontWeight.SemiBold)
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("LOW", "MODERATE", "ACTIVE").forEachIndexed { index, value ->
+                        val label = if (l == "EN") listOf("Low", "Moderate", "Active")[index] else listOf("Низкая", "Умеренная", "Высокая")[index]
+                        FilterChip(selected = profile.activityLevel == value, onClick = { onProfileChange(profile.copy(activityLevel = value)) }, label = { Text(label, maxLines = 1, softWrap = false) }, modifier = Modifier.heightIn(min = 48.dp))
+                    }
+                }
+            }
+            item {
+                Text(if (l == "EN") "Training experience" else "Опыт тренировок", fontWeight = FontWeight.SemiBold)
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("BEGINNER", "INTERMEDIATE", "ADVANCED").forEachIndexed { index, value ->
+                        val label = if (l == "EN") listOf("Beginner", "Intermediate", "Advanced")[index] else listOf("Начинающий", "Средний", "Опытный")[index]
+                        FilterChip(selected = profile.trainingExperience == value, onClick = { onProfileChange(profile.copy(trainingExperience = value)) }, label = { Text(label, maxLines = 1, softWrap = false) }, modifier = Modifier.heightIn(min = 48.dp))
+                    }
+                }
+            }
+            item {
+                ExpressiveCard(Modifier.fillMaxWidth()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(if (l == "EN") "Analysis / Recommendation" else "Анализ / Рекомендация", fontWeight = FontWeight.Bold, fontSize = 19.sp)
+                        when {
+                            recommendation.missing.isNotEmpty() -> {
+                                val labels = if (l == "EN") mapOf("age" to "age", "weight" to "weight", "height" to "height", "activity" to "activity", "experience" to "training experience", "goal" to "goal", "range" to "measurements within the supported range") else mapOf("age" to "возраст", "weight" to "вес", "height" to "рост", "activity" to "активность", "experience" to "опыт тренировок", "goal" to "цель", "range" to "замеры в поддерживаемом диапазоне")
+                                Text((if (l == "EN") "To calculate, add: " else "Для расчёта нужны: ") + recommendation.missing.joinToString { labels.getValue(it) })
+                            }
+                            !recommendation.adult -> Text(if (l == "EN") "This adult exercise range does not apply to users under 18. Keep your own target." else "Этот диапазон для тренирующихся взрослых не применяется до 18 лет. Оставьте свою цель.")
+                            else -> {
+                                Text("${recommendation.minimum}–${recommendation.maximum} " + if (l == "EN") "g / day" else "г / день", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                                Text(if (l == "EN") "An approximate exercise range based on your weight, activity, experience and goal. Individual needs vary." else "Ориентир для тренировок с учётом веса, активности, опыта и цели. Индивидуальная потребность может отличаться.")
+                                Button(onClick = {
+                                    val target = (recommendation.minimum!! + recommendation.maximum!!) / 2
+                                    gp = target.toString()
+                                    onProfileChange(profile.copy(proteinGoal = target, nutritionAutoTargets = false))
+                                    invalid(if (l == "EN") "Protein target applied" else "Цель белка применена")
+                                }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text(if (l == "EN") "Apply" else "Применить") }
+                            }
+                        }
+                        TextButton(onClick = { invalid(if (l == "EN") "Your target is unchanged" else "Ваша цель сохранена без изменений") }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text(if (l == "EN") "Keep mine" else "Оставить моё") }
+                    }
+                }
+            }
         }
+        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).navigationBarsPadding())
+      }
     }
 }
