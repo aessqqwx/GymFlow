@@ -50,7 +50,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - name: Install SDK 37
         run: |
-          sdkmanager --list | rg 'platforms;android-(36|37)|build-tools;37' || true
+          sdkmanager --list | grep -E 'platforms;android-(36|37)|build-tools;37' || true
           sdkmanager 'platforms;android-37' 'build-tools;36.0.0'
       - name: Static resources
         run: sh tools/final-checks/run.sh
