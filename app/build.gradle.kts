@@ -21,8 +21,7 @@ android {
     buildTypes {
         getByName("debug") {
             applicationIdSuffix = ".test"
-            resValue("string", "test_app_name", "GymGlow Test")
-            manifestPlaceholders["appLabel"] = "@string/test_app_name"
+            manifestPlaceholders["appLabel"] = "GymGlow Test"
         }
     }
 
