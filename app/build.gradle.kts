@@ -6,6 +6,7 @@ plugins {
 android {
     namespace = "com.aess.gymflow"
     compileSdk = 37
+    compileSdkMinor = 2
 
     defaultConfig {
         applicationId = "com.aess.gymflow"
