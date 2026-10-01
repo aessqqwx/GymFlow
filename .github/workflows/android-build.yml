@@ -132,4 +132,5 @@ jobs:
           cd dist
           sha256sum -c GymGlow_v1.5.apk.sha256
           cd ..
-          gh release create v1.5 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'GymFlow 1.5 — test APK' --notes-file docs/RELEASE_NOTES_1.5.md --prerelease dist/GymGlow_v1.5.apk dist/GymGlow_v1.5.apk.sha256
+          gh release create "v1.5-build.${GITHUB_RUN_NUMBER}" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "GymFlow 1.5 — build ${GITHUB_RUN_NUMBER}" --notes-file docs/RELEASE_NOTES_1.5.md --prerelease dist/GymGlow_v1.5.apk dist/GymGlow_v1.5.apk.sha256
+
