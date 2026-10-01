@@ -52,6 +52,7 @@ class MusicService : MediaSessionService() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     private val persistListener = object : Player.Listener {
+        @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
         override fun onAudioSessionIdChanged(audioSessionId: Int) { equalizer?.attach(audioSessionId) }
         override fun onEvents(player: Player, events: Player.Events) {
             if (
@@ -64,6 +65,7 @@ class MusicService : MediaSessionService() {
         }
     }
 
+    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
         // If reset was requested while the service was not running, consume the stale guard now.
